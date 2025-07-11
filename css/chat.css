@@ -1,0 +1,11 @@
+/* チャット画面統合スタイル */
+/* 各機能ごとに分割されたCSSファイルをインポート */
+
+@import url('./variables.css');
+@import url('./chat-main.css');
+@import url('./sidebar.css');
+@import url('./members.css');
+@import url('./messages.css');
+@import url('./modals.css');
+@import url('./settings.css');
+@import url('./responsive.css');

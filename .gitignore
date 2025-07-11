@@ -1,0 +1,86 @@
+# テスト・デバッグファイル
+debug_*.php
+test_*.php
+*_test.php
+*_debug.php
+check_*.php
+
+# 開発環境固有ファイル
+.env
+.env.local
+.env.development
+.env.test
+
+# IDE・エディタ設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ログファイル
+*.log
+logs/
+log/
+
+# 一時ファイル
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+
+# キャッシュファイル
+cache/
+*.cache
+
+# アップロードされたファイル
+uploads/*/
+!uploads/.htaccess
+!uploads/README.md
+
+# 画像・メディアファイル
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.svg
+*.webp
+*.ico
+*.mp4
+*.avi
+*.mov
+*.webm
+*.mp3
+*.wav
+*.ogg
+
+# アップロードされたファイル（開発時）
+uploads/test/
+uploads/temp/
+uploads/cache/
+
+# データベースバックアップ
+*.sql
+*.dump
+
+# コンテナ関連
+.env.docker
+docker-compose.override.yml
+
+# パッケージマネージャー
+node_modules/
+vendor/
+composer.lock
+package-lock.json
+
+# ビルド生成物
+build/
+dist/
+public/build/

@@ -1,0 +1,25 @@
+/* CSS変数定義 */
+
+:root {
+    /* 背景色 */
+    --background-primary: #36393f;
+    --background-secondary: #2f3136;
+    --background-tertiary: #202225;
+    --background-floating: #18191c;
+    --background-modifier-hover: #40444b;
+    --background-modifier-accent: #4f545c;
+    --input-background: #40444b;
+    
+    /* テキスト色 */
+    --header-primary: #ffffff;
+    --header-secondary: #b9bbbe;
+    --text-normal: #dcddde;
+    --text-muted: #72767d;
+    --interactive-normal: #b9bbbe;
+    --interactive-hover: #dcddde;
+    
+    /* ブランド色 */
+    --brand: #5865f2;
+    --green: #57f287;
+    --red: #ed4245;
+}

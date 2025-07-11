@@ -1,0 +1,639 @@
+/* サイドバー関連スタイル */
+
+/* 左サイドバー（サーバー選択とDM） */
+.left-sidebar {
+    width: 72px;
+    background-color: #202225;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    border-right: 1px solid #1e2124;
+}
+
+/* DMボタンセクション */
+.dm-button-section {
+    padding: 12px 12px 8px 12px;
+}
+
+.dm-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #36393f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 2px solid #43b581;
+    position: relative;
+}
+
+.dm-button:hover {
+    border-radius: 16px;
+    background-color: #43b581;
+}
+
+.dm-button.active {
+    border-radius: 16px;
+    background-color: #43b581;
+    color: #ffffff;
+}
+
+.dm-button.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 0 2px 2px 0;
+}
+
+.dm-button-icon {
+    font-size: 20px;
+    font-weight: 600;
+    color: #43b581;
+}
+
+.dm-button:hover .dm-button-icon,
+.dm-button.active .dm-button-icon {
+    color: #ffffff;
+}
+
+/* 区切り線 */
+.separator {
+    height: 2px;
+    background-color: #36393f;
+    margin: 8px 12px;
+    border-radius: 1px;
+}
+
+/* メインサイドバー */
+.sidebar {
+    width: 240px;
+    background-color: #2f3136;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.server-info {
+    padding: 16px;
+    border-bottom: 1px solid #202225;
+    background-color: #2f3136;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.username {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.user-status {
+    color: #b9bbbe;
+    font-size: 12px;
+}
+
+.user-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.user-actions button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #b9bbbe;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.15s ease;
+}
+
+/* マイサーバーボタンの特別なスタイル */
+.my-server-btn {
+    width: auto !important;
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    background-color: #5865f2 !important;
+    color: #ffffff !important;
+}
+
+.my-server-btn:hover {
+    background-color: #4752c4 !important;
+    color: #ffffff !important;
+}
+
+.user-actions button:hover {
+    background-color: #40444b;
+    color: #dcddde;
+}
+
+.logout-btn:hover {
+    background-color: #f04747 !important;
+    color: #ffffff !important;
+}
+
+/* サーバーセクション */
+.left-sidebar .servers-section {
+    padding: 4px;
+    flex: 1;
+}
+
+.left-sidebar .section-header {
+    color: #8e9297;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.left-sidebar .servers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.left-sidebar .server-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: #8e9297;
+    width: 48px;
+    height: 48px;
+    position: relative;
+}
+
+.left-sidebar .server-item:hover {
+    border-radius: 16px;
+    background-color: #5865f2;
+}
+
+.left-sidebar .server-item.active {
+    border-radius: 16px;
+    background-color: #5865f2;
+    color: #ffffff;
+}
+
+.left-sidebar .server-item.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 0 2px 2px 0;
+}
+
+.left-sidebar .server-item.add-server {
+    border: 1px dashed #4f545c;
+    background-color: #36393f;
+}
+
+.left-sidebar .server-item.add-server:hover {
+    border-color: #72767d;
+    background-color: #43b581;
+    border-radius: 16px;
+}
+
+.left-sidebar .server-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    transition: border-radius 0.15s ease;
+}
+
+.left-sidebar .server-item:hover .server-icon {
+    border-radius: 16px;
+}
+
+.left-sidebar .server-item.active .server-icon {
+    border-radius: 16px;
+}
+
+.left-sidebar .server-icon.plus {
+    background: transparent;
+    border: none;
+    color: #43b581;
+    font-size: 20px;
+}
+
+.left-sidebar .server-name {
+    display: none;
+}
+
+/* ダイレクトメッセージセクション */
+.left-sidebar .dm-section {
+    padding: 8px 4px;
+    border-top: 1px solid #202225;
+}
+
+.left-sidebar .dm-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.left-sidebar .dm-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: #8e9297;
+    width: 48px;
+    height: 48px;
+    position: relative;
+}
+
+.left-sidebar .dm-item:hover {
+    border-radius: 16px;
+    background-color: #34373c;
+}
+
+.left-sidebar .dm-item.active {
+    border-radius: 16px;
+    background-color: #404249;
+    color: #ffffff;
+}
+
+.left-sidebar .dm-item.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 0 2px 2px 0;
+}
+
+.left-sidebar .dm-item.add-friend {
+    border: 1px dashed #4f545c;
+    background-color: #36393f;
+}
+
+.left-sidebar .dm-item.add-friend:hover {
+    border-color: #72767d;
+    background-color: #43b581;
+    border-radius: 16px;
+}
+
+.left-sidebar .dm-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 16px;
+    transition: border-radius 0.15s ease;
+}
+
+.left-sidebar .dm-item:hover .dm-avatar {
+    border-radius: 16px;
+}
+
+.left-sidebar .dm-item.active .dm-avatar {
+    border-radius: 16px;
+}
+
+.left-sidebar .dm-avatar.plus {
+    background: transparent;
+    border: none;
+    color: #43b581;
+    font-size: 20px;
+}
+
+.left-sidebar .dm-name {
+    display: none;
+}
+
+.left-sidebar .dm-status {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    border: 2px solid #202225;
+}
+
+.left-sidebar .dm-status.online {
+    background-color: #43b581;
+}
+
+.left-sidebar .dm-status.offline {
+    background-color: #747f8d;
+}
+
+.left-sidebar .dm-status.away {
+    background-color: #faa61a;
+}
+
+.left-sidebar .dm-status.busy {
+    background-color: #f04747;
+}
+
+/* DMユーザーアイテム */
+.dm-user-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    margin: 0 4px 2px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    color: #8e9297;
+    position: relative;
+}
+
+.dm-user-item:hover {
+    background-color: #34373c;
+    color: #dcddde;
+}
+
+.dm-user-item.active {
+    background-color: #404249;
+    color: #ffffff;
+}
+
+.dm-user-item.add-friend {
+    border: 1px dashed #4f545c;
+    margin-top: 4px;
+}
+
+.dm-user-item.add-friend:hover {
+    border-color: #72767d;
+    background-color: #40444b;
+}
+
+.dm-user-item .dm-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+.dm-user-item .dm-avatar.plus {
+    background: transparent;
+    border: 1px solid #4f545c;
+    color: #8e9297;
+    font-size: 16px;
+}
+
+.dm-user-item .dm-name {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dm-user-item .dm-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.dm-user-item .dm-status.online {
+    background-color: #43b581;
+}
+
+.dm-user-item .dm-status.offline {
+    background-color: #747f8d;
+}
+
+.dm-user-item .dm-status.away {
+    background-color: #faa61a;
+}
+
+.dm-user-item .dm-status.busy {
+    background-color: #f04747;
+}
+
+/* チャンネルセクション */
+.channels-section {
+    flex: 1;
+    padding: 8px;
+    border-bottom: 1px solid #202225;
+    overflow-y: auto;
+}
+
+.section-header {
+    color: #8e9297;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    padding: 0 8px;
+}
+
+.channels-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.channel-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    margin: 0 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    color: #8e9297;
+}
+
+.channel-item:hover {
+    background-color: #34373c;
+    color: #dcddde;
+}
+
+.channel-item.active {
+    background-color: #404249;
+    color: #ffffff;
+}
+
+.channel-icon {
+    margin-right: 6px;
+    color: #72767d;
+    font-weight: 600;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.channel-item.active .channel-icon {
+    color: #ffffff;
+}
+
+.channel-hash {
+    margin-right: 6px;
+    color: #72767d;
+    font-weight: 600;
+}
+
+.channel-item.active .channel-hash {
+    color: #ffffff;
+}
+
+.channel-name {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* ユーザーコントロール（左下固定） */
+.user-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 12px 16px;
+    border-top: 1px solid #202225;
+    background-color: #2f3136;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.control-button {
+    width: auto;
+    padding: 8px 12px;
+    background-color: #f04747;
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 80px;
+}
+
+.control-button:hover {
+    background-color: #d73f3f;
+}
+
+.control-button:before {
+    content: '🚪';
+    font-size: 16px;
+}
+
+/* チャンネルリストのスタイル調整 */
+.channels-section .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 16px 0 16px;
+}
+
+.channels-section .section-header .add-channel-btn {
+    background: var(--background-tertiary);
+    border: 1px solid var(--background-modifier-accent);
+    color: var(--interactive-normal);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.channels-section .section-header .add-channel-btn:hover {
+    background: var(--background-modifier-hover);
+    color: var(--interactive-hover);
+    border-color: var(--interactive-hover);
+    transform: scale(1.05);
+}
+
+/* 設定チャンネル専用スタイル */
+.settings-channel {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left: 3px solid #ffc107;
+}
+
+.settings-channel:hover {
+    background-color: rgba(255, 193, 7, 0.2);
+}
+
+.settings-channel.active {
+    background-color: rgba(255, 193, 7, 0.3);
+}

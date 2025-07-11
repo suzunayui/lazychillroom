@@ -1,0 +1,27 @@
+# LazyChillRoom用 .htaccess設定
+
+# mod_rewriteを有効化
+RewriteEngine On
+
+# /f/{filename} を api/public_file.php にリダイレクト（8桁の英数字ファイル名）
+RewriteRule ^f/([0-9a-zA-Z]{8}\.[a-zA-Z0-9]+)$ api/public_file.php [L,QSA]
+
+# デフォルトドキュメント
+DirectoryIndex index.html
+
+# セキュリティヘッダー
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options nosniff
+    Header always set X-Frame-Options DENY
+    Header always set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# 機密ファイルへのアクセスを拒否
+<FilesMatch "\.(env|log|sql|bak)$">
+    Require all denied
+</FilesMatch>
+
+# .htaccessファイル自体へのアクセスを拒否
+<Files ".htaccess">
+    Require all denied
+</Files>

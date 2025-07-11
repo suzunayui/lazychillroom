@@ -1,0 +1,553 @@
+/* 認証画面（ログイン・登録）のスタイル */
+
+/* 認証画面全体のコンテナ */
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.3) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* 認証フォームのカード */
+.auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+    width: 100%;
+    max-width: 420px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+/* ロゴエリア */
+.auth-logo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.auth-logo h1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+.auth-logo p {
+    color: #6b7280;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* タブ切り替え */
+.auth-tabs {
+    display: flex;
+    margin-bottom: 32px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 6px;
+    gap: 4px;
+}
+
+.auth-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.auth-tab:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #374151;
+}
+
+.auth-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transform: translateY(-1px);
+}
+
+/* メッセージ表示 */
+.error-message,
+.success-message {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 0;
+    margin: 0;
+    visibility: hidden;
+}
+
+.error-message.show,
+.success-message.show {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 100px;
+    margin-bottom: 20px;
+    visibility: visible;
+}
+
+.error-message {
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+}
+
+.success-message {
+    background: linear-gradient(135deg, #4ecdc4 0%, #2ecc71 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+}
+
+/* フォーム */
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+    animation: fadeInUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* フォームグループ */
+.form-group {
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.form-label {
+    display: block;
+    color: #374151;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    transition: color 0.3s ease;
+}
+
+/* フォーム入力 */
+.form-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    backdrop-filter: blur(10px);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-input:hover {
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+    font-weight: 400;
+}
+
+/* パスワードコンテナ */
+.password-container {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.password-toggle:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+}
+
+/* パスワード強度インジケーター（モダン版） */
+.password-strength {
+    margin-top: 12px;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 0;
+    overflow: hidden;
+}
+
+.password-strength.show {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 60px;
+}
+
+.strength-bar {
+    height: 6px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 10px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.strength-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.3) 0%, 
+        transparent 50%, 
+        rgba(255, 255, 255, 0.3) 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.strength-fill.weak {
+    width: 25%;
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+}
+
+.strength-fill.fair {
+    width: 50%;
+    background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
+}
+
+.strength-fill.good {
+    width: 75%;
+    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
+}
+
+.strength-fill.strong {
+    width: 100%;
+    background: linear-gradient(135deg, #4ecdc4 0%, #2ecc71 100%);
+}
+
+.strength-text {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* パスワード確認インジケーター */
+.password-match {
+    margin-top: 12px;
+    opacity: 1;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.match-text {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.password-match.success .match-text {
+    color: #ffffff;
+    background: linear-gradient(135deg, #4ecdc4 0%, #2ecc71 100%);
+    box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+}
+
+.password-match.error .match-text {
+    color: #ffffff;
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+}
+
+/* 認証ボタン */
+.auth-button {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    margin-top: 12px;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.auth-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+    transition: left 0.5s;
+}
+
+.auth-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+}
+
+.auth-button:hover::before {
+    left: 100%;
+}
+
+.auth-button:active {
+    transform: translateY(0);
+}
+
+.auth-button.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.auth-button.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* フッター */
+.auth-footer {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.auth-link {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.auth-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transition: width 0.3s ease;
+}
+
+.auth-link:hover::after {
+    width: 100%;
+}
+
+/* テストユーザー情報（モダン版） */
+.test-user-info {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.test-user-info h4 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.test-user-info p {
+    color: #6b7280;
+    font-size: 12px;
+    margin: 6px 0;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.test-user-info p strong {
+    color: #374151;
+    font-weight: 600;
+}
+
+.fill-test-data {
+    background: linear-gradient(135deg, #4ecdc4 0%, #2ecc71 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 12px;
+    box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+}
+
+.fill-test-data:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(78, 205, 196, 0.4);
+}
+
+.fill-test-data:active {
+    transform: translateY(0);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 16px;
+    }
+    
+    .auth-card {
+        padding: 32px 24px;
+        max-width: 100%;
+        border-radius: 16px;
+    }
+    
+    .auth-logo h1 {
+        font-size: 28px;
+    }
+    
+    .form-input {
+        font-size: 16px; /* iOS Safariでのズーム防止 */
+        padding: 14px 16px;
+    }
+    
+    .auth-button {
+        padding: 14px;
+    }
+}
+
+/* アニメーション用のユーティリティクラス */
+.floating {
+    animation: floating 3s ease-in-out infinite;
+}
+
+@keyframes floating {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* フォーカス時のアクセシビリティ改善 */
+.form-input:focus-visible,
+.auth-button:focus-visible,
+.auth-tab:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
