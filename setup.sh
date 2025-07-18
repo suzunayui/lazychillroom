@@ -30,4 +30,25 @@ DB_PASSWORD=$(generate_secret)
 sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|" "$ENV_FILE"
 
 echo "✨ Secrets updated successfully!"
+
+# DOMAIN を読み込んでCaddyfileを生成
+DOMAIN=$(grep "^DOMAIN=" "$ENV_FILE" | cut -d '=' -f2)
+
+if [ -z "$DOMAIN" ]; then
+  echo "❌ DOMAIN is not set in $ENV_FILE"
+  exit 1
+fi
+
+echo "🌸 DOMAIN found: $DOMAIN"
+
+# Caddyfile を生成
+cat <<EOF > Caddyfile
+$DOMAIN {
+    root * /srv
+    file_server
+    reverse_proxy /api/* backend:3000
+}
+EOF
+
+echo "✨ Caddyfile generated successfully!"
 echo "🚀 Setup completed!"

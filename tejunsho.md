@@ -13,10 +13,6 @@ chmod +x setup.sh
 
 ./setup.sh
 
-chmod +x generate-caddyfile.sh
-
-./generate-caddyfile.sh
-
 sudo docker compose down
 
 sudo docker compose up --build
