@@ -6,14 +6,26 @@
 
 Ubuntu 24.04サーバーで簡単にデプロイできます：
 
-### 🤖 完全自動（ゼロタッチ）
+### 🔒 HTTPS完全自動（推奨）
 ```bash
-# パスワード自動生成 + 自動デプロイ（最も簡単）
+# ドメイン名を指定してHTTPS自動設定
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy-https.sh | bash -s -- your-domain.com
+```
+- ✅ Let's Encrypt SSL証明書自動取得
+- ✅ HTTPS自動リダイレクト設定
+- ✅ パスワード自動生成 + 自動デプロイ
+
+### 🤖 完全自動（HTTP）
+```bash
+# パスワード自動生成 + 自動デプロイ
 curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy.sh | bash
 ```
 
-### 🔧 セットアップのみ（パスワード自動生成）
+### 🔧 セットアップのみ
 ```bash
+# HTTPS対応セットアップ（デプロイは手動）
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --auto --domain your-domain.com
+
 # 自動セットアップ（デプロイは手動実行）
 curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --auto
 
@@ -30,6 +42,8 @@ cp .env.example .env.production
 nano .env.production  # パスワードとJWT_SECRETを設定
 ./deploy-production.sh
 ```
+
+**注意：** HTTPS設定にはドメインのDNS設定が必要です（AレコードでサーバーIPを指定）
 
 詳細な本番環境デプロイ手順は [DEPLOYMENT.md](DEPLOYMENT.md) を参照してください。
 

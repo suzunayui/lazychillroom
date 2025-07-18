@@ -2,7 +2,26 @@
 
 ## ⚡ クイックデプロイ（Ubuntu 24.04）
 
-### 🤖 完全自動デプロイ（推奨）
+### 🔒 HTTPS完全自動デプロイ（推奨）
+
+**最も安全：** ドメイン名でHTTPS自動設定
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy-https.sh | bash -s -- your-domain.com
+```
+
+**前提条件：**
+- ドメインのAレコードでサーバーIPアドレスを指定
+- DNS設定が反映されていること
+
+**機能：**
+- ✅ Let's Encrypt SSL証明書自動取得
+- ✅ HTTPS自動リダイレクト設定  
+- ✅ セキュアなパスワード自動生成
+- ✅ 自動デプロイ実行
+- ✅ SSL証明書自動更新設定
+
+### 🤖 完全自動デプロイ（HTTP）
 
 **最も簡単：** パスワード自動生成 + 自動デプロイ
 
@@ -21,13 +40,20 @@ curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-d
 ### 🔧 セットアップのみ（自動パスワード生成）
 
 ```bash
-# パスワード自動生成、デプロイは手動
+# HTTPS対応セットアップ（パスワード自動生成、デプロイは手動）
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --auto --domain your-domain.com
+
+# HTTP版セットアップ（パスワード自動生成、デプロイは手動）
 curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --auto
 ```
 
 ### 方法1: ワンライナーセットアップ（手動設定）
 
 ```bash
+# HTTPS対応（手動設定）
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --domain your-domain.com
+
+# HTTP版（手動設定）
 curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash
 ```
 
@@ -127,7 +153,52 @@ npm run prod:deploy
 curl http://localhost/health
 ```
 
-## 🔧 本番環境の管理
+## � SSL/HTTPS設定
+
+### SSL証明書の自動更新設定
+
+```bash
+# crontabに自動更新ジョブを追加
+sudo crontab -e
+
+# 毎日午前2時に証明書更新チェック
+0 2 * * * /home/username/lazychillroom/ssl-renew.sh
+```
+
+### SSL証明書の手動管理
+
+```bash
+# SSL証明書の手動取得
+./ssl-setup.sh your-domain.com
+
+# SSL証明書の手動更新
+./ssl-renew.sh
+
+# SSL証明書の状態確認
+sudo certbot certificates
+```
+
+### HTTPからHTTPSへの移行
+
+既存のHTTPデプロイメントをHTTPSに移行する場合：
+
+```bash
+# 1. ドメインのDNS設定確認
+nslookup your-domain.com
+
+# 2. SSL証明書取得
+./ssl-setup.sh your-domain.com
+
+# 3. 環境設定を更新
+nano .env.production
+# SSL_ENABLED=true
+# DOMAIN=your-domain.com
+
+# 4. Nginxサービス再起動
+podman-compose -f podman-compose.production.yaml restart nginx
+```
+
+## �🔧 本番環境の管理
 
 ### 利用可能なコマンド
 
@@ -137,6 +208,11 @@ npm run prod:up      # サービス開始
 npm run prod:down    # サービス停止
 npm run prod:build   # イメージ再ビルド
 npm run prod:logs    # ログ表示
+
+# HTTPS/SSL管理
+npm run prod:https   # HTTPS完全自動デプロイ（要ドメイン指定）
+npm run prod:ssl-setup  # SSL証明書手動取得
+npm run prod:ssl-renew  # SSL証明書手動更新
 
 # メンテナンス
 ./maintenance.sh status    # 状態確認
@@ -181,10 +257,28 @@ mkdir -p nginx/ssl
 ```bash
 # 必要なポートのみ開放
 sudo ufw enable
+sudo ufw allow 22/tcp   # SSH
 sudo ufw allow 80/tcp   # HTTP
 sudo ufw allow 443/tcp  # HTTPS
-sudo ufw allow 22/tcp   # SSH
+
+# 設定確認
+sudo ufw status numbered
+
+# ファイアウォール管理ツール使用
+./firewall-manager.sh status     # 状態確認
+./firewall-manager.sh setup      # 基本設定
+./firewall-manager.sh list       # ルール一覧
 ```
+
+**開放されるポート:**
+- `22/tcp` - SSH接続
+- `80/tcp` - HTTP (LazyChillRoom)
+- `443/tcp` - HTTPS (LazyChillRoom SSL)
+
+**セキュリティ設定:**
+- デフォルト: 受信拒否、送信許可
+- 必要最小限のポートのみ開放
+- コメント付きルール管理
 
 ## 📊 監視とメンテナンス
 

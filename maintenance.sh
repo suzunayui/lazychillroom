@@ -20,6 +20,7 @@ show_usage() {
     echo "  restore    - データベース復元"
     echo "  cleanup    - 不要なイメージ・ボリューム削除"
     echo "  monitor    - リアルタイム監視"
+    echo "  firewall   - ファイアウォール状態確認"
     echo "  stop       - サービス停止"
     echo "  start      - サービス開始"
     echo ""
@@ -50,6 +51,25 @@ check_services() {
         echo "✅ Redis: 正常"
     else
         echo "❌ Redis: 異常"
+    fi
+    
+    # ファイアウォール状態確認
+    echo ""
+    echo "🛡️  ファイアウォール状態:"
+    if sudo ufw status | grep -q "Status: active"; then
+        echo "✅ UFW: 有効"
+        if sudo ufw status | grep -q "80/tcp"; then
+            echo "✅ HTTP (80): 開放済み"
+        else
+            echo "⚠️  HTTP (80): 未開放"
+        fi
+        if sudo ufw status | grep -q "443/tcp"; then
+            echo "✅ HTTPS (443): 開放済み"
+        else
+            echo "⚠️  HTTPS (443): 未開放"
+        fi
+    else
+        echo "❌ UFW: 無効"
     fi
 }
 
