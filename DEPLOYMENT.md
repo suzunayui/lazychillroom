@@ -16,11 +16,13 @@ curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-d
 
 **これだけで完了！**
 - ✅ 全自動でシステム構築〜アプリ起動まで完了
+- ✅ **既存プロセス自動検出・適切な処理選択**
 - ✅ パスワード自動生成（32文字セキュア）
 - ✅ HTTPS自動設定（Let's Encrypt）
 - ✅ ファイアウォール自動設定
 - ✅ **特権ポート設定自動適用（80/443）**
-- ✅ **既存コンテナ自動クリーンアップ**
+- ✅ **既存コンテナ・ボリューム完全クリーンアップ**
+- ✅ **孤立リソース自動削除**
 - ✅ 完全にゼロタッチインストール
 
 ---
@@ -285,6 +287,8 @@ npm run prod:ssl-renew  # SSL証明書手動更新
 ./maintenance.sh restart   # サービス再起動
 ./maintenance.sh update    # アプリケーション更新
 ./maintenance.sh cleanup   # 不要データ削除
+./maintenance.sh full-clean # 完全クリーンアップ（全削除）
+./emergency-cleanup.sh     # 緊急クリーンアップ（強制全削除）
 ```
 
 ### ログの確認
@@ -426,15 +430,25 @@ podman-compose -f podman-compose.production.yaml logs redis
 ### 緊急時の復旧
 
 ```bash
-# 1. サービス停止
-./maintenance.sh stop
+# 1. 緊急クリーンアップ（全リソース強制削除）
+./emergency-cleanup.sh
 
-# 2. データベース復元（バックアップがある場合）
+# 2. 新規デプロイ実行
+./deploy-production.sh
+
+# 3. データベース復元（バックアップがある場合）
 ./maintenance.sh restore backup_file.sql
 
-# 3. サービス再起動
+# 4. サービス再起動
 ./maintenance.sh start
 ```
+
+**緊急クリーンアップの特徴：**
+- 全LazyChillRoomコンテナ・ボリューム・ネットワークを強制削除
+- ポート競合の解決
+- 孤立したリソースの完全クリーンアップ
+- システム全体のプルーン実行
+- 安全確認プロンプト付き
 
 ## 📋 本番環境チェックリスト
 

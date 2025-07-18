@@ -22,8 +22,34 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-deploy)
             SKIP_DEPLOY=true
-            shift
-            ;;
+            shif# 自動デプロイ実行の確認
+if [ "$SKIP_DEPLOY" = false ]; then
+    if [ "$AUTO_MODE" = true ]; then
+        echo "🤖 自動モードのため、デプロイを自動実行します..."
+        
+        # 既存プロセスの確認
+        echo "🔍 既存のLazyChillRoomプロセスを確認中..."
+        RUNNING_CONTAINERS=$(podman ps --filter "label=com.docker.compose.project=lazychillroom" --format "{{.Names}}" 2>/dev/null || echo "")
+        
+        if [ -n "$RUNNING_CONTAINERS" ]; then
+            echo "⚠️  既存のLazyChillRoomコンテナが実行中です:"
+            echo "$RUNNING_CONTAINERS" | while read -r container; do
+                echo "   - $container"
+            done
+            echo "🔄 既存のデプロイメントを更新します..."
+        else
+            echo "✅ 既存のLazyChillRoomプロセスは見つかりませんでした"
+        fi
+        echo ""
+        
+        if ./deploy-production.sh; then
+            echo ""
+            echo "🚀 デプロイが正常に完了しました！"
+            echo "🌐 アプリケーションにアクセス: http://$(hostname -I | awk '{print $1}')"
+        else
+            echo "❌ デプロイに失敗しました。ログを確認してください。"
+            exit 1
+        fi  ;;
         --domain|-d)
             DOMAIN="$2"
             ENABLE_HTTPS=true
@@ -549,7 +575,7 @@ User=$(whoami)
 Group=$(whoami)
 WorkingDirectory=$HOME/lazychillroom
 ExecStart=$HOME/lazychillroom/deploy-production.sh
-ExecStop=/usr/bin/podman-compose -f $HOME/lazychillroom/podman-compose.production.yaml down
+ExecStop=/usr/bin/podman-compose -f $HOME/lazychillroom/podman-compose.production.yaml down -v
 Restart=always
 RestartSec=10
 
@@ -593,7 +619,21 @@ if [ "$SKIP_DEPLOY" = false ]; then
             exit 1
         fi
     else
-        echo "🚀 デプロイを実行しますか？ (y/N)"
+        # 既存プロセスの確認
+        echo "🔍 既存のLazyChillRoomプロセスを確認中..."
+        RUNNING_CONTAINERS=$(podman ps --filter "label=com.docker.compose.project=lazychillroom" --format "{{.Names}}" 2>/dev/null || echo "")
+        
+        if [ -n "$RUNNING_CONTAINERS" ]; then
+            echo "⚠️  既存のLazyChillRoomコンテナが実行中です:"
+            echo "$RUNNING_CONTAINERS" | while read -r container; do
+                echo "   - $container"
+            done
+            echo "🔄 既存のデプロイメントを更新してデプロイを実行しますか？ (y/N)"
+        else
+            echo "✅ 既存のLazyChillRoomプロセスは見つかりませんでした"
+            echo "🚀 デプロイを実行しますか？ (y/N)"
+        fi
+        
         read -r response
         if [[ "$response" =~ ^[Yy]$ ]]; then
             if ./deploy-production.sh; then

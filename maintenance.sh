@@ -19,6 +19,7 @@ show_usage() {
     echo "  backup     - データベースバックアップ"
     echo "  restore    - データベース復元"
     echo "  cleanup    - 不要なイメージ・ボリューム削除"
+    echo "  full-clean - 完全クリーンアップ（全ボリューム・コンテナ削除）"
     echo "  monitor    - リアルタイム監視"
     echo "  firewall   - ファイアウォール状態確認"
     echo "  stop       - サービス停止"
@@ -199,6 +200,43 @@ cleanup_system() {
     echo "✅ クリーンアップ完了"
 }
 
+full_cleanup() {
+    echo "🚨 完全クリーンアップ - 全てのコンテナとボリュームが削除されます"
+    echo "⚠️  データベースデータも含めて全て削除されます。本当に実行しますか？ (yes/NO)"
+    read -r response
+    
+    if [[ "$response" == "yes" ]]; then
+        echo "🛑 全サービス停止中..."
+        podman-compose -f $COMPOSE_FILE down -v 2>/dev/null || true
+        
+        echo "🗑️  個別コンテナ削除中..."
+        container_names=("lazychillroom_postgres_1" "lazychillroom_redis_1" "lazychillroom_app_1" "lazychillroom_nginx_1")
+        for container in "${container_names[@]}"; do
+            if podman container exists "$container" 2>/dev/null; then
+                echo "   削除中: $container"
+                podman rm -f "$container" 2>/dev/null || true
+            fi
+        done
+        
+        echo "🗑️  LazyChillRoom関連ボリューム削除中..."
+        volume_names=("lazychillroom_postgres_data" "lazychillroom_redis_data" "lazychillroom_app_logs" "lazychillroom_nginx_logs")
+        for volume in "${volume_names[@]}"; do
+            if podman volume exists "$volume" 2>/dev/null; then
+                echo "   削除中: $volume"
+                podman volume rm -f "$volume" 2>/dev/null || true
+            fi
+        done
+        
+        echo "🧹 システム全体クリーンアップ中..."
+        podman system prune -af --volumes 2>/dev/null || true
+        
+        echo "✅ 完全クリーンアップ完了"
+        echo "📋 新規デプロイするには: ./deploy-production.sh"
+    else
+        echo "❌ 完全クリーンアップがキャンセルされました"
+    fi
+}
+
 monitor_services() {
     echo "📊 リアルタイム監視開始（Ctrl+Cで終了）"
     
@@ -250,12 +288,23 @@ case "$1" in
     cleanup)
         cleanup_system
         ;;
+    full-clean)
+        full_cleanup
+        ;;
     monitor)
         monitor_services
         ;;
     stop)
         echo "🛑 サービス停止中..."
-        podman-compose -f $COMPOSE_FILE down
+        echo "🔧 完全停止（ボリューム削除）しますか？ (y/N)"
+        read -r response
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            echo "🗑️  ボリュームも含めて完全停止中..."
+            podman-compose -f $COMPOSE_FILE down -v
+        else
+            echo "📁 ボリュームは保持して停止中..."
+            podman-compose -f $COMPOSE_FILE down
+        fi
         ;;
     start)
         echo "🚀 サービス開始中..."
