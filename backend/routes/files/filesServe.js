@@ -7,7 +7,7 @@ const db = require('../../config/database');
 const { cacheManager } = require('../../config/cache');
 const { authenticateToken } = require('../../middleware/auth');
 
-const uploadsDir = path.join(__dirname, '../../../uploads');
+const uploadsDir = path.join(process.env.UPLOAD_DIR || '/app/uploads');
 const filesDir = path.join(uploadsDir, 'files');
 
 // 画像配信（キャッシュ最適化）

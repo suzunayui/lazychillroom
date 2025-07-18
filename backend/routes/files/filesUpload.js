@@ -31,7 +31,7 @@ const upload = multer({
 // 画像処理クラス
 class ImageProcessor {
   constructor() {
-    this.uploadsDir = path.join(__dirname, '../../../uploads');
+    this.uploadsDir = path.join(process.env.UPLOAD_DIR || '/app/uploads');
     this.filesDir = path.join(this.uploadsDir, 'files');
     this.thumbnailSizes = {
       small: { width: 150, height: 150 },

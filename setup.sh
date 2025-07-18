@@ -54,7 +54,12 @@ cat <<EOF > Caddyfile
 $DOMAIN {
     root * /srv
     file_server
+    
+    # API calls to backend
     reverse_proxy /api/* backend:3000
+    
+    # Direct file access for uploads (served from backend)
+    reverse_proxy /uploads/* backend:3000
     
     tls /etc/ssl/certs/fullchain.pem /etc/ssl/private/privkey.pem
 }

@@ -8,6 +8,8 @@ services:
       - .env
     expose:
       - "3000"
+    volumes:
+      - ./uploads:/app/uploads
     environment:
       - DB_HOST=db
       - DB_PORT=5432

@@ -9,7 +9,7 @@ class IconController {
     const iconStorage = multer.diskStorage({
       destination: async (req, file, cb) => {
         try {
-          const uploadDir = path.join(process.env.UPLOAD_DIR || './uploads', 'server_icons');
+          const uploadDir = path.join(process.env.UPLOAD_DIR || '/app/uploads', 'server_icons');
           await fs.mkdir(uploadDir, { recursive: true });
           cb(null, uploadDir);
         } catch (error) {
