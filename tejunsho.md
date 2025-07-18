@@ -13,6 +13,10 @@ chmod +x setup.sh
 
 ./setup.sh
 
-nano .env
+chmod +x generate-caddyfile.sh
+
+./generate-caddyfile.sh
+
+sudo docker compose down
 
 sudo docker compose up --build

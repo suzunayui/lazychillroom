@@ -16,6 +16,3 @@ ENV NODE_ENV=production
 
 # サーバーポート
 EXPOSE 3000
-
-# 起動コマンド
-CMD ["node", "server.js"]

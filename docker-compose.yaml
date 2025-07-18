@@ -17,6 +17,8 @@ services:
     depends_on:
       - db
       - redis
+    command: >
+      sh -c "node migrations/initPostgreSQL.js && node server.js"
 
   db:
     image: postgres:16
