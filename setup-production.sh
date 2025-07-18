@@ -93,31 +93,62 @@ echo "   npm: $NPM_VERSION"
 REQUIRED_VERSION="20.0.0"
 if dpkg --compare-versions "$NODE_VERSION" "lt" "$REQUIRED_VERSION" 2>/dev/null; then
     echo "⚠️  Node.js v$REQUIRED_VERSION 以上が必要です"
-    echo "🔧 Node.js v22をインストール中..."
+    echo "🔧 Node.js環境を完全にクリーンアップしてインストール中..."
     
-    # 既存のnpmを削除（競合回避）
-    sudo apt remove --purge -y npm nodejs || true
+    # エラーハンドリングを一時的に無効化（クリーンアップ用）
+    set +e
     
-    # NodeSourceリポジトリを追加
+    # 既存のNode.js/npm関連パッケージを完全削除
+    echo "🧹 既存のNode.js/npm環境をクリーンアップ中..."
+    sudo apt remove --purge -y nodejs npm node-* 2>/dev/null
+    sudo apt autoremove -y 2>/dev/null
+    sudo apt autoclean 2>/dev/null
+    
+    # 残存ファイルも削除
+    sudo rm -rf /usr/local/bin/npm /usr/local/share/man/man1/node* /usr/local/lib/dtrace/node.d ~/.npm 2>/dev/null
+    sudo rm -rf /usr/local/lib/node* 2>/dev/null
+    sudo rm -rf /usr/local/bin/node* 2>/dev/null
+    sudo rm -rf /usr/local/include/node* 2>/dev/null
+    
+    # エラーハンドリングを再有効化
+    set -e
+    
+    # NodeSourceリポジトリを追加してNode.js v22をインストール
+    echo "📥 NodeSource リポジトリを追加中..."
     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+    
+    echo "📦 Node.js v22をインストール中..."
+    sudo apt-get update
     sudo apt-get install -y nodejs
     
     echo "✅ Node.js v22 インストール完了"
+    
+    # インストール後の確認
+    NODE_VERSION=$(node --version 2>/dev/null | cut -c 2- || echo "0.0.0")
+    NPM_VERSION=$(npm --version 2>/dev/null || echo "none")
+    echo "📋 インストール完了後の環境:"
+    echo "   Node.js: v$NODE_VERSION"
+    echo "   npm: $NPM_VERSION"
 else
     echo "✅ Node.js v$NODE_VERSION は要件を満たしています"
 fi
 
-# npmが利用できない場合の対処
+# npmが利用できない場合の最終的な対処
 if ! command -v npm &> /dev/null || [ "$NPM_VERSION" = "none" ]; then
-    echo "🔧 npmを修復中..."
-    # npmをUbuntuパッケージから削除し、Node.jsに含まれるnpmを使用
-    sudo apt remove --purge -y npm || true
+    echo "🔧 npmを再インストール中..."
     # Node.js再インストールでnpmも含める
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    sudo apt-get update
+    sudo apt-get install --reinstall -y nodejs
+    
+    # それでもダメな場合はcurlでnpmを直接インストール
+    if ! command -v npm &> /dev/null; then
+        echo "📥 npmを直接インストール中..."
+        curl -L https://www.npmjs.com/install.sh | sudo sh
+    fi
 fi
 
-# 基本パッケージのインストール
+# 基本パッケージのインストール（npmは除外）
+echo "📦 基本パッケージをインストール中..."
 sudo apt update
 if [ "$ENABLE_HTTPS" = true ]; then
     sudo apt install -y curl wget git podman podman-compose ufw certbot python3-certbot-nginx
@@ -255,8 +286,38 @@ echo "📦 依存関係をインストール中..."
 # npmキャッシュをクリア（本番環境用）
 npm cache clean --force 2>/dev/null || true
 
+# npmの最終確認
+echo "🔍 npm動作確認中..."
+if ! npm --version > /dev/null 2>&1; then
+    echo "❌ npmが正常に動作していません"
+    echo "🔧 npmを手動でインストール中..."
+    
+    # Node.jsを再インストール
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+    sudo apt-get install --reinstall -y nodejs
+    
+    # 最終手段: npmをcurlで直接インストール
+    if ! npm --version > /dev/null 2>&1; then
+        echo "📥 npm公式インストーラーを使用..."
+        curl -qL https://www.npmjs.com/install.sh | sudo sh
+    fi
+fi
+
 # 本番環境用の依存関係インストール
-NODE_ENV=production npm ci --only=production 2>/dev/null || npm install --only=production
+echo "📦 プロジェクト依存関係をインストール中..."
+export NODE_ENV=production
+
+# package-lock.jsonがある場合はnpm ci、ない場合はnpm install
+if [ -f "package-lock.json" ]; then
+    echo "📋 package-lock.json検出: npm ciを使用"
+    npm ci --only=production 2>/dev/null || {
+        echo "⚠️  npm ci失敗、npm installにフォールバック"
+        npm install --only=production
+    }
+else
+    echo "📋 package-lock.json未検出: npm installを使用"
+    npm install --only=production
+fi
 
 echo "✅ 本番環境用依存関係インストール完了"
 
