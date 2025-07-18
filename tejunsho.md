@@ -21,6 +21,9 @@ sudo supervisorctl shutdown
 supervisord -c supervisord.conf
 supervisorctl status
 
-sudo docker compose up --build
+# Dockerコンテナが起動したら、個別にログを確認
+supervisorctl stop docker-logs
+sleep 30  # コンテナ起動を待つ
+supervisorctl start docker-logs
 
 sudo docker compose logs backend
