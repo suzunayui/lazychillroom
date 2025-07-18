@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   backend:
     build:
@@ -41,7 +39,7 @@ services:
       - "443:443"
     volumes:
       - ./frontend:/srv
-      - ./Caddyfile.${DOMAIN:-http}:/etc/caddy/Caddyfile
+      - ./Caddyfile.${DOMAIN}:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     environment:
