@@ -80,52 +80,33 @@ echo ""
 
 # 必要なパッケージのインストール
 echo "📦 必要なパッケージをインストール中..."
+if [ "$ENABLE_HTTPS" = true ]; then
+    sudo apt update
+    sudo apt install -y curl wget git podman podman-compose nodejs npm ufw certbot python3-certbot-nginx
+else
+    sudo apt update
+    sudo apt install -y curl wget git podman podman-compose nodejs npm ufw
+fi
 
-# Node.jsとnpmのバージョン確認
-NODE_VERSION=$(node --version 2>/dev/null | cut -c 2- || echo "0.0.0")
-NPM_VERSION=$(npm --version 2>/dev/null || echo "none")
+echo "✅ パッケージインストール完了"
 
-echo "📋 現在の環境:"
-echo "   Node.js: v$NODE_VERSION"
-echo "   npm: $NPM_VERSION"
+# Node.jsのバージョン確認
+NODE_VERSION=$(node --version | cut -c 2-)
+REQUIRED_VERSION="22.0.0"
 
-# Node.js v20以上が必要
-REQUIRED_VERSION="20.0.0"
-if dpkg --compare-versions "$NODE_VERSION" "lt" "$REQUIRED_VERSION" 2>/dev/null; then
+echo "📋 Node.js バージョン: $NODE_VERSION"
+
+# バージョン比較（簡易版）
+if dpkg --compare-versions "$NODE_VERSION" "lt" "$REQUIRED_VERSION"; then
     echo "⚠️  Node.js v$REQUIRED_VERSION 以上が必要です"
     echo "🔧 Node.js v22をインストール中..."
-    
-    # 既存のnpmを削除（競合回避）
-    sudo apt remove --purge -y npm nodejs || true
     
     # NodeSourceリポジトリを追加
     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
     sudo apt-get install -y nodejs
     
     echo "✅ Node.js v22 インストール完了"
-else
-    echo "✅ Node.js v$NODE_VERSION は要件を満たしています"
 fi
-
-# npmが利用できない場合の対処
-if ! command -v npm &> /dev/null || [ "$NPM_VERSION" = "none" ]; then
-    echo "🔧 npmを修復中..."
-    # npmをUbuntuパッケージから削除し、Node.jsに含まれるnpmを使用
-    sudo apt remove --purge -y npm || true
-    # Node.js再インストールでnpmも含める
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt-get install -y nodejs
-fi
-
-# 基本パッケージのインストール
-sudo apt update
-if [ "$ENABLE_HTTPS" = true ]; then
-    sudo apt install -y curl wget git podman podman-compose ufw certbot python3-certbot-nginx
-else
-    sudo apt install -y curl wget git podman podman-compose ufw
-fi
-
-echo "✅ パッケージインストール完了"
 
 # LazyChillRoomのクローン
 PROJECT_DIR="$HOME/lazychillroom"
@@ -181,13 +162,6 @@ if [ ! -f ".env.production" ]; then
             sed -i "s/# SSL_ENABLED=true/SSL_ENABLED=true/g" .env.production
             echo "✅ ドメイン設定を追加: $DOMAIN"
         fi
-        
-        # 本番環境用設定を追加
-        echo "" >> .env.production
-        echo "# 本番環境用設定" >> .env.production
-        echo "NODE_ENV=production" >> .env.production
-        echo "LOG_LEVEL=info" >> .env.production
-        echo "TRUST_PROXY=true" >> .env.production
         
         echo "✅ .env.production を自動設定しました"
         echo ""
@@ -251,29 +225,19 @@ fi
 
 # 依存関係のインストール
 echo "📦 依存関係をインストール中..."
-
-# npmキャッシュをクリア（本番環境用）
-npm cache clean --force 2>/dev/null || true
-
-# 本番環境用の依存関係インストール
-NODE_ENV=production npm ci --only=production 2>/dev/null || npm install --only=production
-
-echo "✅ 本番環境用依存関係インストール完了"
+npm install
 
 # ファイアウォール設定
 echo "🔒 ファイアウォール設定中..."
 echo "📋 UFWでポートを開放中..."
 
-# UFWをリセット（本番環境用）
-sudo ufw --force reset
-echo "� ファイアウォールをリセットしました"
+# UFWが有効でない場合は有効化
+if ! sudo ufw status | grep -q "Status: active"; then
+    echo "🛡️  UFWを有効化中..."
+    sudo ufw --force enable
+fi
 
-# デフォルトポリシーを設定（本番環境向け）
-sudo ufw default deny incoming
-sudo ufw default allow outgoing
-echo "🛡️  デフォルトポリシーを設定: 受信拒否、送信許可"
-
-# 必要なポートのみ開放
+# 必要なポートを開放
 echo "🔓 SSH (22/tcp) を開放中..."
 sudo ufw allow 22/tcp comment 'SSH'
 
@@ -289,10 +253,6 @@ else
     sudo ufw allow 443/tcp comment 'HTTPS for LazyChillRoom (future use)'
 fi
 
-# UFWを有効化
-echo "🛡️  UFWを有効化中..."
-sudo ufw --force enable
-
 # ファイアウォール状態の確認
 echo "📊 ファイアウォール設定確認:"
 sudo ufw status numbered
@@ -302,27 +262,6 @@ echo "✅ ファイアウォール設定完了"
 # アップロードディレクトリの作成
 echo "📁 アップロードディレクトリを作成中..."
 mkdir -p uploads/files uploads/avatars logs backups
-
-# 本番環境用の権限設定
-echo "🔐 本番環境用ディレクトリ権限を設定中..."
-chmod 755 uploads uploads/files uploads/avatars
-chmod 750 logs backups
-chmod 644 .env.production 2>/dev/null || true
-
-# ログローテーション設定
-sudo tee /etc/logrotate.d/lazychillroom > /dev/null << EOF
-$HOME/lazychillroom/logs/*.log {
-    daily
-    rotate 30
-    compress
-    delaycompress
-    missingok
-    notifempty
-    create 640 $(whoami) $(whoami)
-}
-EOF
-
-echo "✅ 本番環境用権限設定完了"
 
 # SSL証明書の設定（ドメインが指定された場合）
 if [ "$ENABLE_HTTPS" = true ] && [ -n "$DOMAIN" ]; then
@@ -428,50 +367,9 @@ EOF
     fi
 fi
 
-# 本番環境用systemdサービス設定
-echo "⚙️  本番環境用サービス設定を作成中..."
-
-# podman-compose用systemdサービス
-sudo tee /etc/systemd/system/lazychillroom.service > /dev/null << EOF
-[Unit]
-Description=LazyChillRoom Application
-After=network.target
-
-[Service]
-Type=forking
-User=$(whoami)
-Group=$(whoami)
-WorkingDirectory=$HOME/lazychillroom
-ExecStart=$HOME/lazychillroom/deploy-production.sh
-ExecStop=/usr/bin/podman-compose -f $HOME/lazychillroom/podman-compose.production.yaml down
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# 自動起動を有効化
-sudo systemctl daemon-reload
-sudo systemctl enable lazychillroom.service
-
-echo "✅ systemdサービス設定完了"
-
 # セットアップ完了
 echo ""
-echo "🎉 LazyChillRoom 本番環境セットアップ完了！"
-echo ""
-echo "📋 本番環境デプロイの手順:"
-echo "   1. DNS設定を確認:"
-echo "      - Aレコード: $DOMAIN → $(curl -s ifconfig.me || hostname -I | awk '{print $1}')"
-if [ "$ENABLE_HTTPS" = true ]; then
-echo "      - SSL証明書用にポート80,443が開放されていることを確認"
-fi
-echo ""
-echo "   2. セキュリティ設定を確認:"
-echo "      - ファイアウォール: ✅ 設定済み"
-echo "      - パスワード: ✅ 自動生成済み"
-echo "      - systemd: ✅ 自動起動設定済み"
+echo "🎉 LazyChillRoom セットアップ完了！"
 echo ""
 
 # 自動デプロイ実行の確認

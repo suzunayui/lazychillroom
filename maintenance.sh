@@ -27,16 +27,33 @@ show_usage() {
 }
 
 check_services() {
-    echo "🔍 サービス状態確認中..."
-    podman-compose -f $COMPOSE_FILE ps
+    echo "� LazyChillRoom サービス状態確認"
     echo ""
     
-    # ヘルスチェック
-    echo "🏥 ヘルスチェック実行中..."
-    if curl -f http://localhost/health > /dev/null 2>&1; then
-        echo "✅ アプリケーション: 正常"
+    # systemdサービス状態
+    echo "🔧 Systemdサービス:"
+    if systemctl is-active --quiet lazychillroom.service 2>/dev/null; then
+        echo "✅ LazyChillRoom Service: 実行中"
     else
-        echo "❌ アプリケーション: 異常"
+        echo "❌ LazyChillRoom Service: 停止中 (systemctl status lazychillroom.service で詳細確認)"
+    fi
+    
+    echo ""
+    echo "🐳 コンテナ状態:"
+    if podman-compose -f $COMPOSE_FILE ps | grep -q "Up"; then
+        podman-compose -f $COMPOSE_FILE ps
+    else
+        echo "❌ コンテナが実行されていません"
+    fi
+    
+    echo ""
+    echo "� サービス稼働確認:"
+    
+    # アプリケーション接続チェック
+    if curl -s -o /dev/null -w "%{http_code}" http://localhost | grep -q "200\|302"; then
+        echo "✅ アプリケーション: 正常応答"
+    else
+        echo "❌ アプリケーション: 応答なし"
     fi
     
     # PostgreSQL接続チェック
@@ -52,6 +69,13 @@ check_services() {
     else
         echo "❌ Redis: 異常"
     fi
+    
+    # システムリソース確認
+    echo ""
+    echo "💾 システムリソース:"
+    echo "ディスク: $(df -h . | tail -1 | awk '{print $3 "/" $2 " (" $5 ")"}')"
+    echo "メモリ: $(free -h | grep Mem | awk '{print $3 "/" $2}')"
+    echo "ロードアベレージ: $(uptime | awk -F'load average:' '{print $2}')"
     
     # ファイアウォール状態確認
     echo ""

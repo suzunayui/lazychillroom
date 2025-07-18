@@ -4,7 +4,18 @@
 
 set -e  # エラーが発生したら停止
 
-echo "=== LazyChillRoom 本番環境デプロイ開始 ==="
+echo "🚀 LazyChillRoom 本番環境デプロイ開始"
+echo "📅 $(date '+%Y-%m-%d %H:%M:%S')"
+echo ""
+
+# 実行ユーザーの確認
+if [ "$EUID" -eq 0 ]; then
+    echo "❌ このスクリプトはrootユーザーで実行しないでください"
+    echo "一般ユーザーで実行し、必要に応じてsudoを使用してください"
+    exit 1
+fi
+
+# 本番環境の設定確認
 
 # 現在のディレクトリがプロジェクトルートかチェック
 if [ ! -f "package.json" ] || [ ! -f ".env.example" ]; then
@@ -12,37 +23,33 @@ if [ ! -f "package.json" ] || [ ! -f ".env.example" ]; then
     exit 1
 fi
 
-# 環境変数の確認
+# 本番環境の設定確認
+echo "🔍 本番環境設定確認中..."
+
 if [ ! -f ".env.production" ]; then
     echo "❌ .env.production ファイルが見つかりません"
-    echo "🔧 .env.example をコピーして .env.production を作成してください:"
-    echo "   cp .env.example .env.production"
-    echo "   nano .env.production"
+    echo "setup-production.sh を先に実行してください"
     exit 1
 fi
 
-# 必要な環境変数が設定されているかチェック
-source .env.production
+# 重要な環境変数の確認
+required_vars=("DB_PASSWORD" "REDIS_PASSWORD" "JWT_SECRET")
+for var in "${required_vars[@]}"; do
+    if grep -q "your_.*_here" .env.production; then
+        echo "❌ 設定値が初期値のままです: $var"
+        echo ".env.production を確認してください"
+        exit 1
+    fi
+done
 
-if [ -z "$DB_PASSWORD" ] || [ "$DB_PASSWORD" = "your_secure_database_password_here" ]; then
-    echo "❌ DB_PASSWORD が設定されていません"
-    echo "🔧 .env.production でDB_PASSWORDを設定してください"
-    exit 1
-fi
+echo "✅ 本番環境設定確認完了"
 
-if [ -z "$REDIS_PASSWORD" ] || [ "$REDIS_PASSWORD" = "your_secure_redis_password_here" ]; then
-    echo "❌ REDIS_PASSWORD が設定されていません"
-    echo "🔧 .env.production でREDIS_PASSWORDを設定してください"
-    exit 1
-fi
+# Node.jsプロセス管理の準備
+echo "⚙️  Node.jsプロセス管理準備中..."
+export NODE_ENV=production
+export NODE_OPTIONS="--max-old-space-size=2048"
 
-if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = "your_very_long_and_secure_jwt_secret_key_minimum_64_characters_required" ]; then
-    echo "❌ JWT_SECRET が設定されていません"
-    echo "🔧 .env.production でJWT_SECRETを設定してください"
-    exit 1
-fi
-
-echo "✅ 環境変数チェック完了"
+echo "✅ Node.jsプロセス管理準備完了"
 
 # 既存のコンテナを停止
 echo "🛑 既存のコンテナを停止中..."
