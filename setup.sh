@@ -33,13 +33,21 @@ echo "✨ Secrets updated successfully!"
 
 # DOMAIN を読み込んでCaddyfileを生成
 DOMAIN=$(grep "^DOMAIN=" "$ENV_FILE" | cut -d '=' -f2)
+CERT_PATH=$(grep "^CERT_PATH=" "$ENV_FILE" | cut -d '=' -f2)
+KEY_PATH=$(grep "^KEY_PATH=" "$ENV_FILE" | cut -d '=' -f2)
 
 if [ -z "$DOMAIN" ]; then
   echo "❌ DOMAIN is not set in $ENV_FILE"
   exit 1
 fi
 
+if [ -z "$CERT_PATH" ] || [ -z "$KEY_PATH" ]; then
+  echo "❌ CERT_PATH or KEY_PATH is not set in $ENV_FILE"
+  exit 1
+fi
+
 echo "🌸 DOMAIN found: $DOMAIN"
+echo "🔐 Using certificates: $CERT_PATH, $KEY_PATH"
 
 # Caddyfile を生成
 cat <<EOF > Caddyfile
@@ -47,6 +55,8 @@ $DOMAIN {
     root * /srv
     file_server
     reverse_proxy /api/* backend:3000
+    
+    tls /etc/ssl/certs/fullchain.pem /etc/ssl/private/privkey.pem
 }
 EOF
 

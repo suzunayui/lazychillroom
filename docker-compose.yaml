@@ -56,6 +56,8 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+      - ${CERT_PATH}:/etc/ssl/certs/fullchain.pem:ro
+      - ${KEY_PATH}:/etc/ssl/private/privkey.pem:ro
     environment:
       - DOMAIN=${DOMAIN}
     depends_on:
