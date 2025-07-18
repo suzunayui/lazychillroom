@@ -16,3 +16,5 @@ chmod +x setup.sh
 sudo docker compose down
 
 sudo docker compose up --build
+
+sudo docker compose logs backend

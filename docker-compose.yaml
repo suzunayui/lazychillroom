@@ -4,16 +4,20 @@ services:
       context: .
       dockerfile: ./Dockerfile
     container_name: lazy-backend
+    env_file:
+      - .env
     expose:
       - "3000"
     environment:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASSWORD=secret
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=lazychill
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - db
       - redis
@@ -23,9 +27,11 @@ services:
   db:
     image: postgres:16
     container_name: lazy-postgres
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: lazychill
     volumes:
       - db-data:/var/lib/postgresql/data
