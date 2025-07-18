@@ -168,6 +168,19 @@ fi
 
 echo "✅ パッケージインストール完了"
 
+# 特権ポートの設定（rootless Podmanでポート80/443を使用可能にする）
+echo "🔧 特権ポート設定を構成中（HTTP/HTTPS対応）..."
+if ! grep -q "net.ipv4.ip_unprivileged_port_start" /etc/sysctl.conf; then
+    echo "net.ipv4.ip_unprivileged_port_start=80" | sudo tee -a /etc/sysctl.conf
+    echo "✅ 特権ポート設定を追加しました（ポート80-443が使用可能）"
+    
+    # 設定を即座に適用
+    sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+    echo "✅ 特権ポート設定を適用しました（再起動後も有効）"
+else
+    echo "✅ 特権ポート設定は既に存在します（ポート80-443使用可能）"
+fi
+
 # LazyChillRoomのクローン
 PROJECT_DIR="$HOME/lazychillroom"
 
