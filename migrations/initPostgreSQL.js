@@ -89,7 +89,8 @@ async function initPostgreSQLDatabase() {
     console.log('✅ Database connection successful');
 
     // スキーマファイルを読み込み
-    const schemaPath = path.join(__dirname, 'postgresql-schema.sql');
+    const schemaPath = path.join(process.cwd(), 'migrations', 'postgresql-schema.sql');
+    console.log(`📁 Loading schema from: ${schemaPath}`);
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8');
     
     // SQLを適切に分割（ドル記号文字列とコメントを考慮）
