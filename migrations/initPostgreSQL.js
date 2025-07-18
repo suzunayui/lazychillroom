@@ -1,4 +1,4 @@
-const { query } = require('../backend/config/database');
+const { query } = require('../config/database');
 const fs = require('fs');
 const path = require('path');
 
