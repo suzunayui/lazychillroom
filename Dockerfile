@@ -10,6 +10,7 @@ RUN npm install
 
 # ソースコードコピー
 COPY ./backend /app
+COPY ./migrations /app/migrations
 
 # 環境変数
 ENV NODE_ENV=production
