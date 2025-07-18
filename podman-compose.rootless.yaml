@@ -1,8 +1,7 @@
 version: '3.8'
 
-# Podman特有の設定
-# 権限ポート（80/443）は cap_add: NET_BIND_SERVICE で対応
-# 環境変数は以下で自動生成されます
+# Podman rootless用設定 - 高ポート版
+# 80/443の代わりに8080/8443を使用
 
 services:
   # 環境変数初期化サービス（一度だけ実行）
@@ -80,57 +79,6 @@ services:
       - .:/shared
     restart: "no"
 
-  # SSL証明書取得サービス（ドメイン指定時のみ）
-  certbot:
-    image: docker.io/certbot/certbot:latest
-    command: |
-      sh -c '
-        DOMAIN=$${DOMAIN:-};
-        if [ -n "$$DOMAIN" ]; then
-          if [ ! -f /etc/letsencrypt/live/$$DOMAIN/fullchain.pem ]; then
-            echo "🔒 SSL証明書を取得中: $$DOMAIN";
-            
-            # Nginxが起動していない場合のみstandaloneモード使用
-            if ! nc -z localhost 80 2>/dev/null; then
-              echo "📋 スタンドアロンモードで証明書を取得中...";
-              certbot certonly --standalone --non-interactive --agree-tos --email admin@$$DOMAIN -d $$DOMAIN --cert-name $$DOMAIN;
-            else
-              echo "📋 Webrootモードで証明書を取得中...";
-              mkdir -p /var/www/certbot;
-              certbot certonly --webroot -w /var/www/certbot --non-interactive --agree-tos --email admin@$$DOMAIN -d $$DOMAIN --cert-name $$DOMAIN;
-            fi
-            
-            if [ $$? -eq 0 ]; then
-              echo "✅ SSL証明書取得完了: $$DOMAIN";
-              mkdir -p /nginx-ssl;
-              cp /etc/letsencrypt/live/$$DOMAIN/fullchain.pem /nginx-ssl/;
-              cp /etc/letsencrypt/live/$$DOMAIN/privkey.pem /nginx-ssl/;
-              echo "📋 証明書をNginxディレクトリにコピー完了";
-            else
-              echo "❌ SSL証明書取得に失敗しました";
-              echo "⚠️  HTTPモードで起動します";
-            fi
-          else
-            echo "✅ SSL証明書は既に存在します: $$DOMAIN";
-            mkdir -p /nginx-ssl;
-            cp /etc/letsencrypt/live/$$DOMAIN/fullchain.pem /nginx-ssl/ 2>/dev/null || true;
-            cp /etc/letsencrypt/live/$$DOMAIN/privkey.pem /nginx-ssl/ 2>/dev/null || true;
-          fi
-        else
-          echo "🌐 ドメインが指定されていません。HTTPモードで起動します";
-        fi
-      '
-    environment:
-      - DOMAIN=${DOMAIN:-}
-    volumes:
-      - ./nginx/ssl:/nginx-ssl
-      - certbot_data:/etc/letsencrypt
-      - certbot_webroot:/var/www/certbot
-    # ポート80は削除（Nginxとの競合を避ける）
-    depends_on:
-      init:
-        condition: service_completed_successfully
-    restart: "no"
   app:
     build: .
     ports:
@@ -234,21 +182,19 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  # 本番環境ではNginxリバースプロキシを追加
+  # Nginx (高ポート版)
   nginx:
     image: docker.io/library/nginx:alpine
-    # 権限ポート（80/443）にバインド
+    # 高ポート番号を使用（rootless環境対応）
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
-      - certbot_webroot:/var/www/certbot:ro
     depends_on:
       - app
-      - certbot
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
@@ -263,12 +209,6 @@ services:
           memory: 128M
     security_opt:
       - no-new-privileges:true
-    # 権限ポート（80/443）へのバインドを許可
-    cap_add:
-      - NET_BIND_SERVICE
-    # 注意: rootlessモードでは以下の設定も必要な場合があります:
-    # privileged: true  # 最大権限（セキュリティリスクあり）
-    # user: "0:0"       # rootユーザーで実行
 
 volumes:
   postgres_data:
@@ -278,8 +218,4 @@ volumes:
   app_logs:
     driver: local
   nginx_logs:
-    driver: local
-  certbot_data:
-    driver: local
-  certbot_webroot:
     driver: local
