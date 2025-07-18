@@ -29,11 +29,18 @@ cd lazychillroom
 npm run prod:all  # これだけで完了！
 ```
 
+### 3. ドメイン設定（HTTPS化）
+```bash
+# ドメイン指定でHTTPS自動設定
+DOMAIN=your-domain.com npm run prod:all
+```
+
 **自動で実行される内容：**
 - 依存関係インストール (`npm install`)
 - セキュアなパスワード自動生成
 - データベース・Redis・アプリ・Caddy起動
 - データベーステーブル作成
+- **Let's Encrypt SSL証明書自動取得（ドメイン指定時）**
 
 ## 🛠️ よく使うコマンド
 

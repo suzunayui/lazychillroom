@@ -2,7 +2,38 @@
 
 {
     # グローバル設定
-    email admin@example.com
+    email admin@{$DOMAIN:admin@example.com}
+}
+
+# ドメイン指定時のHTTPS設定（自動SSL証明書取得）
+{$DOMAIN} {
+    # Node.jsアプリへのプロキシ
+    reverse_proxy app:3000
+
+    # ヘルスチェックエンドポイント
+    handle /health {
+        reverse_proxy app:3000
+    }
+
+    # アップロードファイル用（大きなファイル対応）
+    request_body {
+        max_size 10MB
+    }
+
+    # セキュリティヘッダー（HTTPS用）
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        X-XSS-Protection "1; mode=block"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+
+    # アクセスログ
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
 }
 
 # ローカル環境（ドメイン未指定時）
