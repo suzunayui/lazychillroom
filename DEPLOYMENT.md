@@ -1,6 +1,46 @@
 # LazyChillRoom 本番環境デプロイガイド
 
-## ⚡ クイックデプロイ（Ubuntu 24.04）
+## ⚡ 最速デプロイ（Ubuntu 24.04）
+
+### 🚀 3ステップ本番デプロイ
+
+**最も簡単（HTTPS対応）：** スクリプトダウンロード → 実行権限付与 → HTTPS自動デプロイ
+
+```bash
+# 1. セットアップスクリプトをダウンロード
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh -o setup-production.sh
+
+# 2. 実行権限を付与
+chmod +x setup-production.sh
+
+# 3. HTTPS完全自動デプロイ実行（環境準備→Podmanコンテナ起動）
+./setup-production.sh --domain your-domain.com --auto
+```
+
+**HTTP版（ドメインなし）：**
+```bash
+# 1. セットアップスクリプトをダウンロード
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh -o setup-production.sh
+
+# 2. 実行権限を付与
+chmod +x setup-production.sh
+
+# 3. HTTP完全自動デプロイ実行（環境準備→Podmanコンテナ起動）
+./setup-production.sh --auto
+```
+
+**機能：**
+- ✅ 必要パッケージの自動インストール（Podman, podman-compose含む）
+- ✅ Node.js v22自動インストール（依存関係解決含む）
+- ✅ セキュアなパスワード自動生成（32文字）
+- ✅ JWT_SECRET自動生成（64文字）
+- ✅ ファイアウォール設定（UFW）
+- ✅ SSL証明書自動取得（HTTPS版）
+- ✅ **Podmanコンテナ自動起動（PostgreSQL, Redis, App, Nginx）**
+- ✅ systemd自動起動設定
+- ✅ 完全なWebアプリケーション稼働
+
+## ⚡ ワンライナーデプロイ（Ubuntu 24.04）
 
 ### 🔒 HTTPS完全自動デプロイ（推奨）
 

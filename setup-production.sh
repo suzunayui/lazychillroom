@@ -123,6 +123,10 @@ if dpkg --compare-versions "$NODE_VERSION" "lt" "$REQUIRED_VERSION" 2>/dev/null;
     
     echo "✅ Node.js v22 インストール完了"
     
+    # npmを特定のバージョン（11.4.2）にアップグレード
+    echo "📦 npm v11.4.2にアップグレード中..."
+    sudo npm install -g npm@11.4.2
+    
     # インストール後の確認
     NODE_VERSION=$(node --version 2>/dev/null | cut -c 2- || echo "0.0.0")
     NPM_VERSION=$(npm --version 2>/dev/null || echo "none")
@@ -140,10 +144,16 @@ if ! command -v npm &> /dev/null || [ "$NPM_VERSION" = "none" ]; then
     sudo apt-get update
     sudo apt-get install --reinstall -y nodejs
     
+    # npmを特定のバージョン（11.4.2）にアップグレード
+    echo "📦 npm v11.4.2にアップグレード中..."
+    sudo npm install -g npm@11.4.2
+    
     # それでもダメな場合はcurlでnpmを直接インストール
     if ! command -v npm &> /dev/null; then
         echo "📥 npmを直接インストール中..."
         curl -L https://www.npmjs.com/install.sh | sudo sh
+        # 特定のバージョンに再アップグレード
+        sudo npm install -g npm@11.4.2
     fi
 fi
 
@@ -296,10 +306,16 @@ if ! npm --version > /dev/null 2>&1; then
     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
     sudo apt-get install --reinstall -y nodejs
     
+    # npmを特定のバージョン（11.4.2）にアップグレード
+    echo "📦 npm v11.4.2にアップグレード中..."
+    sudo npm install -g npm@11.4.2
+    
     # 最終手段: npmをcurlで直接インストール
     if ! npm --version > /dev/null 2>&1; then
         echo "📥 npm公式インストーラーを使用..."
         curl -qL https://www.npmjs.com/install.sh | sudo sh
+        # 特定のバージョンに再アップグレード
+        sudo npm install -g npm@11.4.2
     fi
 fi
 
