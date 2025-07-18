@@ -95,7 +95,7 @@ const expressStatic = express.static(path.join(__dirname, '../frontend'), {
 });
 
 app.use(expressStatic);
-app.use('/uploads', express.static(path.join(__dirname, '../uploads'), {
+app.use('/uploads', express.static(process.env.UPLOAD_DIR || path.join(__dirname, '../uploads'), {
   maxAge: '7d', // アップロードファイルは7日キャッシュ
   etag: true
 }));
