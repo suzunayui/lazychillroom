@@ -1,0 +1,321 @@
+/* メンバーリスト関連スタイル */
+
+/* メンバーリストサイドバー */
+.members-sidebar {
+    width: 240px;
+    background-color: #2f3136;
+    display: flex !important; /* JavaScriptによる非表示を強制上書き */
+    flex-direction: column;
+    min-height: 100vh;
+    border-left: 1px solid #202225;
+    opacity: 1 !important; /* 常に不透明 */
+    transform: translateX(0) !important; /* 常に表示位置 */
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* メンバーリストが表示される時のスタイル */
+.members-sidebar.show {
+    display: flex;
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 読み込み時のちらつき防止 */
+.chat-container:not(.loaded) .members-sidebar {
+    display: none !important;
+}
+
+.members-header {
+    padding: 16px;
+    border-bottom: 1px solid #202225;
+    background-color: #2f3136;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.members-header span {
+    font-weight: 600;
+    color: #8e9297;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.members-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 8px;
+}
+
+.members-section {
+    margin-bottom: 16px;
+}
+
+.members-section-header {
+    padding: 16px 8px 0 8px;
+    margin-bottom: 8px;
+}
+
+.members-section-header .section-title {
+    font-weight: 600;
+    color: #8e9297;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.members-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    position: relative;
+}
+
+.member-item:hover {
+    background-color: #34373c;
+}
+
+.member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #5865f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* メンバーリストのアバター画像スタイル */
+.member-avatar .member-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #2f3136;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.member-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.member-name {
+    font-weight: 500;
+    color: #dcddde;
+    font-size: 16px;
+    line-height: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.member-activity {
+    font-size: 12px;
+    color: #72767d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+}
+
+.member-status {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #2f3136;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    z-index: 1;
+}
+
+.member-status.online {
+    background-color: #3ba55c;
+}
+
+.member-status.offline {
+    background-color: #747f8d;
+}
+
+.member-status.away {
+    background-color: #faa61a;
+}
+
+.member-status.busy {
+    background-color: #ed4245;
+}
+
+/* ステータスインジケーター */
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    border: 2px solid #2f3136;
+    z-index: 2;
+}
+
+.status-indicator.status-online {
+    background-color: #43b581;
+}
+
+.status-indicator.status-away {
+    background-color: #faa61a;
+}
+
+.status-indicator.status-busy {
+    background-color: #f04747;
+}
+
+.status-indicator.status-invisible,
+.status-indicator.status-offline {
+    background-color: #747f8d;
+}
+
+/* ステータス変更ボタン */
+.status-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: #dcddde;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+    width: 100%;
+    text-align: left;
+}
+
+.status-button:hover {
+    background-color: #5865f2;
+}
+
+.status-button.active {
+    background-color: #5865f2;
+    color: white;
+}
+
+.status-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: #18191c;
+    border: 1px solid #40444b;
+    border-radius: 4px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+    padding: 8px 0;
+    margin-bottom: 8px;
+    z-index: 1000;
+}
+
+/* ユーザーステータス表示 */
+.user-status {
+    font-size: 12px;
+    color: #b9bbbe;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.user-status.status-online,
+.user-status.status-away,
+.user-status.status-busy,
+.user-status.status-invisible,
+.user-status.status-offline {
+    color: #b9bbbe;
+}
+
+/* 閉じるボタンのスタイル */
+.close-members-btn {
+    background: none;
+    border: none;
+    color: #b9bbbe;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    width: 32px;
+    height: 32px;
+    display: none !important; /* 強制的に非表示 */
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.close-members-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.close-members-btn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+}
+
+/* スマホでのみ表示 */
+@media (max-width: 768px) {
+    .close-members-btn {
+        display: flex !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .close-members-btn {
+        display: none;
+    }
+}
+
+/* 小さな画面でのメンバー情報表示最適化 */
+@media (max-width: 480px) {
+    .member-info {
+        display: none; /* スマートフォンでは名前を非表示 */
+    }
+    
+    .member-item {
+        justify-content: center; /* アバターを中央揃え */
+        padding: 6px 2px; /* パディングを縮小 */
+    }
+    
+    .member-avatar {
+        margin-right: 0; /* 右マージンを削除 */
+    }
+}
+
+@media (max-width: 320px) {
+    .member-info {
+        display: none; /* 極小画面でも名前を非表示 */
+    }
+    
+    .member-item {
+        padding: 4px 2px; /* さらにパディングを縮小 */
+    }
+}

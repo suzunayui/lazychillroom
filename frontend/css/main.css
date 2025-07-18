@@ -1,0 +1,29 @@
+/* LazyChillRoom - メインCSSファイル */
+/* すべてのCSSファイルを統合して読み込む */
+
+/* 変数定義（最初に読み込み） */
+@import url('./variables.css');
+
+/* 基本設定とレイアウト */
+@import url('./style.css');
+
+/* 認証関連 */
+@import url('./auth.css');
+@import url('./auth-layout.css');
+@import url('./auth-forms.css');
+
+/* チャット関連 */
+@import url('./chat.css');
+@import url('./chat-main.css');
+@import url('./messages.css');
+
+/* UI コンポーネント */
+@import url('./sidebar.css');
+@import url('./servers.css');
+@import url('./user-channels.css');
+@import url('./members.css');
+@import url('./modals.css');
+@import url('./settings.css');
+
+/* レスポンシブ対応 */
+@import url('./responsive.css');

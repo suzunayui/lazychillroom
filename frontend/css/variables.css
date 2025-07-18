@@ -1,0 +1,90 @@
+/* CSS変数定義ファイル */
+/* LazyChillRoom のテーマカラーと共通変数 */
+
+:root {
+    /* カラーテーマ（Discord風） */
+    /* 背景色 */
+    --bg-primary: #36393f;
+    --bg-secondary: #2f3136;
+    --bg-tertiary: #202225;
+    --bg-floating: #18191c;
+    --bg-modifier-hover: #40444b;
+    --bg-modifier-accent: #4f545c;
+    --input-background: #40444b;
+    
+    /* 基本背景色（エイリアス） */
+    --background-primary: #36393f;
+    --background-secondary: #2f3136;
+    --background-tertiary: #202225;
+    --background-floating: #18191c;
+    --background-modifier-hover: #40444b;
+    --background-modifier-accent: #4f545c;
+    
+    /* テキスト色 */
+    --text-primary: #dcddde;
+    --text-secondary: #b9bbbe;
+    --text-muted: #72767d;
+    --text-normal: #dcddde;
+    --header-primary: #ffffff;
+    --header-secondary: #b9bbbe;
+    --interactive-normal: #b9bbbe;
+    --interactive-hover: #dcddde;
+    
+    /* ブランド・アクセント色 */
+    --accent: #5865f2;
+    --accent-hover: #4752c4;
+    --brand: #5865f2;
+    --brand-experiment: #5865f2;
+    --brand-experiment-hover: #4752c4;
+    --green: #57f287;
+    --red: #ed4245;
+    --yellow: #faa61a;
+    
+    /* 危険色 */
+    --text-danger: #ed4245;
+    --status-danger: #ed4245;
+    --status-danger-hover: #da373c;
+    --button-danger-background: #da373c;
+    --button-danger-background-hover: #a12829;
+    --button-secondary-background: #4f545c;
+    
+    /* UI要素 */
+    --border: #40444b;
+    --hover: #34373c;
+    --selected: #5865f2;
+    
+    /* フォント */
+    --font-primary: 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+    --font-size-sm: 0.75rem;
+    --font-size-base: 0.875rem;
+    --font-size-lg: 1rem;
+    --font-size-xl: 1.125rem;
+    
+    /* サイズ */
+    --sidebar-width: 240px;
+    --header-height: 60px;
+    --border-radius: 4px;
+    --border-radius-lg: 8px;
+    
+    /* Z-index 管理 */
+    --z-modal: 1000;
+    --z-overlay: 999;
+    --z-dropdown: 100;
+    --z-header: 50;
+    --z-sidebar: 10;
+    
+    /* アニメーション */
+    --transition-fast: 0.15s ease;
+    --transition-medium: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* 影 */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.16);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+    
+    /* ボーダー */
+    --border-width: 1px;
+    --border-style: solid;
+    --border-color: var(--border);
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LazyChillRoom - チャットアプリ</title>
+    
+    <!-- ローディング画面用の最小限CSS -->
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        .loading-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin: 10px auto;
+            overflow: hidden;
+        }
+        .loading-bar-progress {
+            height: 100%;
+            background: white;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- ローディング画面 -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">読み込み中...</div>
+            <div class="loading-bar">
+                <div class="loading-bar-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- メインアプリケーション -->
+    <div id="app"></div>
+    
+    <!-- Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Safe Dynamic Script Loading with Enhanced Error Handling -->
+    <script>
+        (function() {
+            console.log('🔍 LazyChillRoom初期化開始');
+            console.log('🔍 現在のURL:', window.location.href);
+            
+            // 安全な動的スクリプト読み込み（タイムアウト付き）
+            function loadScript(src, timeout = 10000) {
+                return new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = src;
+                    script.async = false; // 実行順序を保証
+                    
+                    let timeoutId = setTimeout(() => {
+                        console.error(`⏰ Script loading timeout: ${src}`);
+                        script.remove();
+                        reject(new Error(`Timeout loading ${src}`));
+                    }, timeout);
+                    
+                    script.onload = function() {
+                        clearTimeout(timeoutId);
+                        console.log(`✓ Script loaded successfully: ${src}`);
+                        resolve();
+                    };
+                    
+                    script.onerror = function() {
+                        clearTimeout(timeoutId);
+                        console.error(`✗ Failed to load script: ${src}`);
+                        reject(new Error(`Failed to load ${src}`));
+                    };
+                    
+                    console.log(`📥 Loading script: ${src}`);
+                    document.head.appendChild(script);
+                });
+            }
+            
+            // アプリケーション初期化の実行
+            async function initializeApp() {
+                try {
+                    console.log(' アプリを読み込み中...');
+                    await loadScript('js/app.js', 15000);
+                    console.log('✅ アプリの読み込み完了');
+                } catch (error) {
+                    console.error('❌ アプリ読み込みエラー:', error);
+                    
+                    const loadingText = document.querySelector('.loading-text');
+                    if (loadingText) {
+                        loadingText.textContent = 'アプリの読み込みに失敗しました。ページを再読み込みしてください。';
+                        loadingText.style.color = '#f44336';
+                    }
+                    
+                    // 5秒後に自動リロード
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 5000);
+                }
+            }
+            
+            // DOMContentLoadedまたは即座に実行
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeApp);
+            } else {
+                setTimeout(initializeApp, 100);
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+/* サーバー選択関連スタイル */
+
+/* 左サイドバー（サーバー選択とDM） */
+.left-sidebar {
+    width: 72px;
+    background-color: #202225;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    border-right: 1px solid #1e2124;
+}
+
+/* DMボタンセクション */
+.dm-button-section {
+    padding: 12px 12px 8px 12px;
+}
+
+.dm-button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #36393f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 2px solid #43b581;
+    position: relative;
+}
+
+.dm-button:hover {
+    border-radius: 16px;
+    background-color: #43b581;
+}
+
+.dm-button.active {
+    border-radius: 16px;
+    background-color: #43b581;
+    color: #ffffff;
+}
+
+.dm-button.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 0 2px 2px 0;
+}
+
+.dm-button-icon {
+    font-size: 20px;
+    font-weight: 600;
+    color: #43b581;
+}
+
+.dm-button:hover .dm-button-icon,
+.dm-button.active .dm-button-icon {
+    color: #ffffff;
+}
+
+/* 区切り線 */
+.separator {
+    height: 2px;
+    background-color: #36393f;
+    margin: 8px 12px;
+    border-radius: 1px;
+}
+
+/* サーバー選択セクション */
+.servers-section {
+    flex: 1;
+    padding: 0 12px;
+    overflow-y: auto;
+}
+
+.servers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.server-item {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #36393f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.server-item:hover {
+    border-radius: 16px;
+    background-color: #5865f2;
+}
+
+.server-item.active {
+    border-radius: 16px;
+    background-color: #5865f2;
+}
+
+.server-item.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 0 2px 2px 0;
+}
+
+.server-icon {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    border-radius: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #dcddde;
+    text-align: center;
+}
+
+/* サーバーアイコン画像 */
+.server-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+}
+
+/* サーバーアイコンがテキストの場合とのフォールバック */
+.server-icon:has(.server-icon-img) {
+    padding: 0;
+    background: none;
+}
+
+/* アイコン画像がない場合のテキスト表示 */
+.server-icon:not(:has(.server-icon-img)) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #dcddde;
+    text-align: center;
+}
+
+.server-item:hover .server-icon {
+    color: #ffffff;
+}
+
+.server-item.active .server-icon {
+    color: #ffffff;
+}
+
+.server-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #dcddde;
+    text-align: center;
+}
+
+.server-item:hover .server-name {
+    color: #ffffff;
+}
+
+.add-server {
+    background-color: #36393f;
+    border: 2px dashed #72767d;
+    color: #72767d;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.add-server:hover {
+    border-color: #43b581;
+    color: #43b581;
+    background-color: #43b581;
+}
+
+.add-server .server-icon.plus {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.add-server:hover .server-icon.plus {
+    color: #ffffff;
+}

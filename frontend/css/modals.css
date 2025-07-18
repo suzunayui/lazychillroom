@@ -1,0 +1,674 @@
+/* モーダル・フォーム関連スタイル */
+
+/* モーダル */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-accent);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 2px solid var(--background-modifier-accent);
+    background: var(--background-primary);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--header-primary);
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: var(--background-tertiary);
+    border: 1px solid var(--background-modifier-accent);
+    color: var(--interactive-normal);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.modal-close:hover {
+    background: var(--background-modifier-hover);
+    color: var(--interactive-hover);
+    border-color: var(--interactive-hover);
+}
+
+.modal-body {
+    padding: 20px;
+    background: var(--background-primary);
+}
+
+/* フォーム */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: var(--header-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    background: var(--input-background);
+    border: 2px solid var(--background-tertiary);
+    border-radius: 6px;
+    padding: 12px;
+    color: var(--text-normal);
+    font-size: 16px;
+    resize: vertical;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--brand);
+    background: var(--background-secondary);
+    box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
+}
+
+.form-group input:hover,
+.form-group textarea:hover,
+.form-group select:hover {
+    border-color: var(--background-modifier-accent);
+}
+
+/* フォーカス状態の改善 */
+.form-group input:focus-visible,
+.form-group textarea:focus-visible,
+.form-group select:focus-visible,
+.btn:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+/* プレースホルダーのスタイル */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+/* セレクトボックスの矢印カスタマイズ */
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b9bbbe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+/* 通知スタイルの改善 */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--background-floating);
+    color: var(--text-normal);
+    padding: 16px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-accent);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 400px;
+    z-index: 1001;
+    animation: slideIn 0.3s ease;
+}
+
+.notification-success {
+    border-left: 4px solid var(--green);
+    background: var(--background-floating);
+}
+
+.notification-error {
+    border-left: 4px solid var(--red);
+    background: var(--background-floating);
+}
+
+.notification-close {
+    background: var(--background-tertiary);
+    border: 1px solid var(--background-modifier-accent);
+    color: var(--interactive-normal);
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 16px;
+    padding: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.notification-close:hover {
+    color: var(--interactive-hover);
+    background: var(--background-modifier-hover);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* サーバー作成モーダル */
+.server-create-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.server-create-modal.hidden {
+    display: none;
+}
+
+.server-create-content {
+    background: #36393f;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 460px;
+    padding: 0;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.24);
+    animation: slideInUp 0.3s ease-out;
+    position: relative;
+}
+
+.server-create-header {
+    padding: 24px 24px 0 24px;
+    text-align: center;
+}
+
+.server-create-title {
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.server-create-subtitle {
+    color: #b9bbbe;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.server-create-body {
+    padding: 24px;
+}
+
+.server-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-label {
+    color: #b9bbbe;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.form-input {
+    background: #40444b;
+    border: none;
+    border-radius: 3px;
+    color: #dcddde;
+    font-size: 16px;
+    padding: 10px;
+    transition: background-color 0.15s ease;
+}
+
+.form-input:focus {
+    background: #484c52;
+    outline: none;
+}
+
+.form-textarea {
+    background: #40444b;
+    border: none;
+    border-radius: 3px;
+    color: #dcddde;
+    font-size: 14px;
+    padding: 10px;
+    resize: vertical;
+    min-height: 80px;
+    max-height: 120px;
+    font-family: inherit;
+    transition: background-color 0.15s ease;
+}
+
+.form-textarea:focus {
+    background: #484c52;
+    outline: none;
+}
+
+/* サーバーアイコンアップロード */
+.server-icon-upload {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.server-icon-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid var(--background-modifier-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-tertiary);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.server-icon-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.server-icon-preview span {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--header-primary);
+}
+
+.server-icon-input-group {
+    flex: 1;
+}
+
+.server-icon-input {
+    display: none;
+}
+
+.server-icon-button {
+    background: var(--brand-experiment);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: block;
+    width: 100%;
+    max-width: 200px;
+}
+
+.server-icon-button:hover {
+    background: var(--brand-experiment-hover);
+}
+
+.server-icon-button:disabled {
+    background: var(--button-secondary-background);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.server-create-footer {
+    background: #2f3136;
+    padding: 16px 24px;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: transparent;
+    color: #dcddde;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn-cancel:hover {
+    background: #40444b;
+}
+
+.btn-create {
+    background: #5865f2;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    position: relative;
+    min-width: 80px;
+}
+
+.btn-create:hover:not(:disabled) {
+    background: #4752c4;
+}
+
+.btn-create:disabled {
+    background: #4f545c;
+    cursor: not-allowed;
+}
+
+.btn-create .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* コンテキストメニュー */
+.context-menu {
+    background: var(--background-floating);
+    border: 1px solid var(--background-modifier-accent);
+    border-radius: 6px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    min-width: 180px;
+    padding: 6px 0;
+    user-select: none;
+    animation: contextMenuSlideIn 0.1s ease-out;
+}
+
+.context-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--interactive-normal);
+    font-size: 14px;
+    transition: background-color 0.1s ease;
+}
+
+.context-menu-item:hover {
+    background: var(--background-modifier-hover);
+    color: var(--interactive-hover);
+}
+
+.context-menu-item.danger {
+    color: var(--text-danger);
+}
+
+.context-menu-item.danger:hover {
+    background: var(--button-danger-background);
+    color: #ffffff;
+}
+
+.context-menu-icon {
+    margin-right: 8px;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: var(--background-modifier-accent);
+    margin: 4px 0;
+}
+
+@keyframes contextMenuSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* 危険ボタン */
+.btn-danger {
+    background: var(--button-danger-background);
+    color: #ffffff;
+    border: 1px solid var(--button-danger-background);
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+    background: var(--button-danger-background-hover);
+}
+
+.btn-danger:disabled {
+    background: var(--button-secondary-background);
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+/* 入力・確認ダイアログ */
+.input-modal,
+.confirm-modal {
+    background: var(--background-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--background-modifier-accent);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    max-width: 400px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.input-modal .modal-header,
+.confirm-modal .modal-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--background-modifier-accent);
+    background: var(--background-primary);
+}
+
+.input-modal .modal-header h3,
+.confirm-modal .modal-header h3 {
+    margin: 0;
+    color: var(--header-primary);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.input-modal .modal-body,
+.confirm-modal .modal-body {
+    padding: 20px;
+}
+
+.input-modal .modal-body p,
+.confirm-modal .modal-body p {
+    margin: 0 0 15px 0;
+    color: var(--text-normal);
+    line-height: 1.5;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--background-modifier-accent);
+    border-radius: 4px;
+    background: var(--background-tertiary);
+    color: var(--text-normal);
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: var(--brand-experiment);
+    box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.3);
+}
+
+.input-field::placeholder {
+    color: var(--text-muted);
+}
+
+.input-modal .modal-footer,
+.confirm-modal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid var(--background-modifier-accent);
+    background: var(--background-primary);
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--brand-experiment);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--brand-experiment-hover);
+}
+
+.btn-secondary {
+    background: var(--background-tertiary);
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-accent);
+}
+
+.btn-secondary:hover {
+    background: var(--background-modifier-hover);
+}
+
+.btn-danger {
+    background: var(--status-danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: var(--status-danger-hover);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 600px) {
+    .server-create-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .server-create-header,
+    .server-create-body {
+        padding: 16px;
+    }
+    
+    .server-create-footer {
+        padding: 12px 16px;
+        flex-direction: column;
+    }
+    
+    .server-icon-upload {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .server-icon-preview {
+        margin-bottom: 12px;
+    }
+}

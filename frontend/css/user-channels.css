@@ -1,0 +1,566 @@
+/* ユーザー情報とチャンネル一覧のスタイル */
+
+/* メインサイドバー */
+.sidebar {
+    width: 240px;
+    background-color: #2f3136;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* min-heightからheightに変更 */
+    box-sizing: border-box; /* パディングを含めた計算 */
+    overflow: hidden; /* はみ出し防止 */
+}
+
+.server-info {
+    padding: 16px;
+    border-bottom: 1px solid #202225;
+    background-color: #2f3136;
+    height: auto; /* 高さを自動調整に変更 */
+    min-height: 80px; /* 最小高さを設定 */
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; /* 縮小を防ぐ */
+    box-sizing: border-box; /* パディングを含めた計算 */
+}
+
+.user-info {
+    display: flex;
+    align-items: flex-start; /* アバターを上寄せ */
+    gap: 8px;
+    width: 100%;
+    height: auto; /* 高さを自動調整 */
+    padding: 8px 0; /* 上下パディング追加 */
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    overflow: hidden;
+}
+
+.user-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #2f3136;
+    position: relative;
+    z-index: 1;
+}
+
+.user-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px; /* ユーザー名、ステータス、ボタンの間隔 */
+}
+
+.nickname {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 2px;
+}
+
+.clickable-nickname {
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.clickable-nickname:hover {
+    color: #7289da;
+}
+
+.user-status {
+    font-size: 12px;
+    color: #b9bbbe;
+    font-weight: 500;
+}
+
+/* ステータス別の色分け */
+.user-status.status-online {
+    color: #43b581;
+}
+
+.user-status.status-away {
+    color: #faa61a;
+}
+
+.user-status.status-busy {
+    color: #f04747;
+}
+
+.user-status.status-invisible,
+.user-status.status-offline {
+    color: #747f8d;
+}
+
+/* 使用しなくなったuser-actionsスタイル */
+/*
+.user-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    height: 32px;
+    flex-shrink: 0;
+}
+*/
+
+.user-actions .my-server-btn {
+    background: linear-gradient(135deg, #7289da, #5b6eae) !important;
+    border: 2px solid #7289da !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    height: 26px !important;
+    max-height: 26px !important;
+    line-height: 1.2;
+    font-weight: 600;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 2px 4px rgba(114, 137, 218, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-actions .my-server-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2.5s infinite;
+}
+
+/* スペシャルエフェクト - 微細な背景グロー */
+.user-actions .my-server-btn::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #7289da, #5b6eae, #7289da);
+    border-radius: 8px;
+    z-index: -1;
+    opacity: 0.6;
+    filter: blur(8px);
+    animation: glow-rotate 4s linear infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+}
+
+@keyframes glow-rotate {
+    0% { filter: blur(8px) hue-rotate(0deg); }
+    100% { filter: blur(8px) hue-rotate(360deg); }
+}
+
+/* 微細なパルス効果 */
+.user-actions .my-server-btn {
+    animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+@keyframes subtle-pulse {
+    0%, 100% { 
+        box-shadow: 0 2px 4px rgba(114, 137, 218, 0.3);
+    }
+    50% { 
+        box-shadow: 0 2px 8px rgba(114, 137, 218, 0.5), 0 0 12px rgba(114, 137, 218, 0.2);
+    }
+}
+
+.user-actions .my-server-btn:hover {
+    border-color: #8fa1e3 !important;
+    background: linear-gradient(135deg, #8fa1e3, #6b7bb8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(114, 137, 218, 0.4);
+    animation: none; /* ホバー時はパルス効果を停止 */
+}
+
+.user-actions .my-server-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(114, 137, 218, 0.3);
+}
+
+/* user-details内のマイサーバーボタン（新レイアウト用） */
+.user-details .my-server-btn {
+    background: linear-gradient(135deg, #7289da, #5b6eae) !important;
+    border: 2px solid #7289da !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    height: 24px !important;
+    max-height: 24px !important;
+    line-height: 1.2;
+    font-weight: 600;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 2px 4px rgba(114, 137, 218, 0.3);
+    position: relative;
+    overflow: hidden;
+    width: auto !important;
+    max-width: 100px !important;
+    margin-top: 2px;
+    animation: subtle-pulse 3s ease-in-out infinite;
+}
+
+.user-details .my-server-btn:hover {
+    border-color: #8fa1e3 !important;
+    background: linear-gradient(135deg, #8fa1e3, #6b7bb8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(114, 137, 218, 0.4);
+    animation: none;
+}
+
+.user-details .my-server-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(114, 137, 218, 0.3);
+}
+
+/* user-details内ボタンのエフェクト */
+.user-details .my-server-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2.5s infinite;
+}
+
+.user-details .my-server-btn::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #7289da, #5b6eae, #7289da);
+    border-radius: 8px;
+    z-index: -1;
+    opacity: 0.6;
+    filter: blur(8px);
+    animation: glow-rotate 4s linear infinite;
+}
+
+.user-details .my-server-btn:hover::after {
+    opacity: 0.8;
+    filter: blur(12px);
+    animation: none;
+}
+
+/* チャンネルセクション */
+.channels-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box; /* パディングを含めた計算 */
+    min-height: 0; /* フレックス子要素の最小高さを0に */
+}
+
+.section-header {
+    padding: 16px 8px 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-header span {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8e9297;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.add-channel-btn {
+    width: 16px;
+    height: 16px;
+    color: #8e9297;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.add-channel-btn:hover {
+    color: #dcddde;
+}
+
+.channels-list {
+    flex: 1;
+    padding: 8px 8px 0 8px;
+    overflow-y: auto;
+}
+
+.channel-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px;
+    margin: 1px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    position: relative;
+}
+
+.channel-item:hover {
+    background-color: #40444b;
+}
+
+.channel-item.active {
+    background-color: #40444b;
+}
+
+.channel-item.active::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background-color: #ffffff;
+    border-radius: 0 2px 2px 0;
+}
+
+.channel-icon {
+    font-size: 16px;
+    color: #8e9297;
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.channel-item.active .channel-icon {
+    color: #dcddde;
+}
+
+.channel-name {
+    font-size: 14px;
+    color: #8e9297;
+    flex: 1;
+    font-weight: 500;
+}
+
+.channel-item.active .channel-name {
+    color: #ffffff;
+}
+
+/* 設定チャンネル用のuploader-channelスタイル調整 */
+.sidebar .channels-list .channel-item.uploader-channel[data-channel] .channel-icon {
+    font-size: 16px; /* 通常のチャンネルアイコンと同じサイズに戻す */
+    color: #8e9297; /* セクションヘッダーと同じ色 */
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+}
+
+.sidebar .channels-list .channel-item.uploader-channel[data-channel] .channel-name {
+    font-size: 14px; /* 通常のチャンネル名と同じサイズに戻す */
+    font-weight: 500; /* 通常のチャンネルと同じ太さ */
+    color: #8e9297; /* セクションヘッダーと同じ色 */
+    text-transform: none; /* 大文字変換を無効にして読みやすく */
+    letter-spacing: normal;
+}
+
+/* 設定チャンネル（uploader-channel）のセクションヘッダー風レイアウト */
+.sidebar .channels-list .channel-item.uploader-channel[data-channel] {
+    /* 通常のチャンネルアイテムと同じパディングで適度な大きさに */
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    border-left: none;
+    margin: 1px 0;
+    border-radius: 4px;
+    position: relative;
+}
+
+/* アクティブ状態のインジケーター（白い縦線）を設定チャンネルでは非表示にする */
+.sidebar .channels-list .channel-item.uploader-channel[data-channel]::before,
+.sidebar .channels-list .channel-item.uploader-channel[data-channel].active::before {
+    display: none;
+    content: none;
+}
+
+/* 設定チャンネルのホバー効果を無効にして、セクションヘッダー風にする */
+.sidebar .channels-list .channel-item.uploader-channel[data-channel]:hover {
+    background-color: transparent;
+}
+
+.sidebar .channels-list .channel-item.uploader-channel[data-channel]:hover .channel-icon,
+.sidebar .channels-list .channel-item.uploader-channel[data-channel]:hover .channel-name {
+    color: #dcddde;
+}
+
+/* DMユーザーリスト */
+.dm-user-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    margin: 1px 0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.dm-user-item:hover {
+    background-color: #40444b;
+}
+
+.dm-user-item.active {
+    background-color: #40444b;
+}
+
+.dm-user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-right: 8px;
+}
+
+.dm-user-name {
+    font-size: 14px;
+    color: #dcddde;
+    font-weight: 500;
+}
+
+.dm-user-item.active .dm-user-name {
+    color: #ffffff;
+}
+
+.add-friend {
+    border: 2px dashed #4f545c;
+    background-color: transparent;
+    justify-content: center;
+    color: #4f545c;
+}
+
+.add-friend:hover {
+    border-color: #43b581;
+    color: #43b581;
+}
+
+/* 下部のユーザー情報エリア */
+.user-panel {
+    padding: 8px;
+    background-color: #292b2f;
+    border-top: 1px solid #202225;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.current-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.current-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.current-nickname {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.current-user-status {
+    font-size: 12px;
+    color: #b9bbbe;
+}
+
+.user-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.control-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background-color: transparent;
+    border: none;
+    color: #b9bbbe;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.control-btn:hover {
+    background-color: #40444b;
+    color: #dcddde;
+}
+
+.logout-btn {
+    background: none;
+    border: 1px solid #ed4245;
+    color: #ed4245;
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.logout-btn:hover {
+    background-color: #ed4245;
+    color: #ffffff;
+}

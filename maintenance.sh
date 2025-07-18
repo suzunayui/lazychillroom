@@ -1,0 +1,225 @@
+#!/bin/bash
+
+# LazyChillRoom 本番環境メンテナンススクリプト
+
+set -e
+
+COMPOSE_FILE="podman-compose.production.yaml"
+
+show_usage() {
+    echo "LazyChillRoom 本番環境メンテナンスツール"
+    echo ""
+    echo "使用方法: $0 [コマンド]"
+    echo ""
+    echo "利用可能なコマンド:"
+    echo "  status     - サービス状態確認"
+    echo "  logs       - ログ表示"
+    echo "  restart    - サービス再起動"
+    echo "  update     - アプリケーション更新"
+    echo "  backup     - データベースバックアップ"
+    echo "  restore    - データベース復元"
+    echo "  cleanup    - 不要なイメージ・ボリューム削除"
+    echo "  monitor    - リアルタイム監視"
+    echo "  stop       - サービス停止"
+    echo "  start      - サービス開始"
+    echo ""
+}
+
+check_services() {
+    echo "🔍 サービス状態確認中..."
+    podman-compose -f $COMPOSE_FILE ps
+    echo ""
+    
+    # ヘルスチェック
+    echo "🏥 ヘルスチェック実行中..."
+    if curl -f http://localhost/health > /dev/null 2>&1; then
+        echo "✅ アプリケーション: 正常"
+    else
+        echo "❌ アプリケーション: 異常"
+    fi
+    
+    # PostgreSQL接続チェック
+    if podman-compose -f $COMPOSE_FILE exec -T postgres pg_isready -U lazychillroom_user > /dev/null 2>&1; then
+        echo "✅ PostgreSQL: 正常"
+    else
+        echo "❌ PostgreSQL: 異常"
+    fi
+    
+    # Redis接続チェック
+    if podman-compose -f $COMPOSE_FILE exec -T redis redis-cli ping > /dev/null 2>&1; then
+        echo "✅ Redis: 正常"
+    else
+        echo "❌ Redis: 異常"
+    fi
+}
+
+show_logs() {
+    echo "📋 ログ表示（Ctrl+Cで終了）"
+    podman-compose -f $COMPOSE_FILE logs -f
+}
+
+restart_services() {
+    echo "🔄 サービス再起動中..."
+    podman-compose -f $COMPOSE_FILE restart
+    sleep 10
+    check_services
+}
+
+update_application() {
+    echo "🔄 アプリケーション更新中..."
+    
+    # バックアップ作成
+    echo "💾 更新前バックアップ作成中..."
+    backup_database
+    
+    # アプリケーション停止
+    echo "🛑 アプリケーション停止中..."
+    podman-compose -f $COMPOSE_FILE stop app nginx
+    
+    # 新しいイメージをビルド
+    echo "🔨 新しいイメージビルド中..."
+    podman-compose -f $COMPOSE_FILE build app nginx
+    
+    # アプリケーション再起動
+    echo "🚀 アプリケーション起動中..."
+    podman-compose -f $COMPOSE_FILE up -d app nginx
+    
+    sleep 20
+    check_services
+    echo "✅ アプリケーション更新完了"
+}
+
+backup_database() {
+    BACKUP_DIR="./backups"
+    BACKUP_FILE="$BACKUP_DIR/lazychillroom-$(date +%Y%m%d-%H%M%S).sql"
+    
+    mkdir -p $BACKUP_DIR
+    
+    echo "💾 データベースバックアップ中..."
+    podman-compose -f $COMPOSE_FILE exec -T postgres pg_dump -U lazychillroom_user lazychillroom > $BACKUP_FILE
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ バックアップ完了: $BACKUP_FILE"
+        
+        # 7日以上古いバックアップを削除
+        find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
+    else
+        echo "❌ バックアップに失敗しました"
+        exit 1
+    fi
+}
+
+restore_database() {
+    if [ -z "$2" ]; then
+        echo "❌ 復元するバックアップファイルを指定してください"
+        echo "使用方法: $0 restore backup_file.sql"
+        exit 1
+    fi
+    
+    BACKUP_FILE=$2
+    
+    if [ ! -f "$BACKUP_FILE" ]; then
+        echo "❌ バックアップファイルが見つかりません: $BACKUP_FILE"
+        exit 1
+    fi
+    
+    echo "⚠️  データベース復元を実行します"
+    echo "現在のデータは失われます。続行しますか？ (y/N)"
+    read -r response
+    
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        echo "🔄 データベース復元中..."
+        podman-compose -f $COMPOSE_FILE exec -T postgres psql -U lazychillroom_user -d lazychillroom < $BACKUP_FILE
+        echo "✅ データベース復元完了"
+    else
+        echo "❌ 復元をキャンセルしました"
+    fi
+}
+
+cleanup_system() {
+    echo "🧹 システムクリーンアップ中..."
+    
+    # 使用されていないイメージを削除
+    echo "🗑️  不要なイメージ削除中..."
+    podman image prune -f
+    
+    # 使用されていないボリュームを削除（注意：データが失われる可能性）
+    echo "⚠️  不要なボリューム削除を実行しますか？ (y/N)"
+    read -r response
+    
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        podman volume prune -f
+        echo "✅ ボリューム削除完了"
+    fi
+    
+    echo "✅ クリーンアップ完了"
+}
+
+monitor_services() {
+    echo "📊 リアルタイム監視開始（Ctrl+Cで終了）"
+    
+    while true; do
+        clear
+        echo "=== LazyChillRoom 監視ダッシュボード ==="
+        echo "更新時刻: $(date)"
+        echo ""
+        
+        # サービス状態
+        check_services
+        echo ""
+        
+        # リソース使用量
+        echo "💻 リソース使用量:"
+        podman stats --no-stream --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.MemPerc}}" | head -10
+        echo ""
+        
+        # 最新のログ（最後の5行）
+        echo "📋 最新ログ:"
+        podman-compose -f $COMPOSE_FILE logs --tail=5 app | tail -5
+        echo ""
+        echo "次の更新まで30秒..."
+        
+        sleep 30
+    done
+}
+
+# メイン処理
+case "$1" in
+    status)
+        check_services
+        ;;
+    logs)
+        show_logs
+        ;;
+    restart)
+        restart_services
+        ;;
+    update)
+        update_application
+        ;;
+    backup)
+        backup_database
+        ;;
+    restore)
+        restore_database $@
+        ;;
+    cleanup)
+        cleanup_system
+        ;;
+    monitor)
+        monitor_services
+        ;;
+    stop)
+        echo "🛑 サービス停止中..."
+        podman-compose -f $COMPOSE_FILE down
+        ;;
+    start)
+        echo "🚀 サービス開始中..."
+        podman-compose -f $COMPOSE_FILE up -d
+        sleep 10
+        check_services
+        ;;
+    *)
+        show_usage
+        ;;
+esac

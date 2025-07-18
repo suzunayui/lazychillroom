@@ -1,0 +1,417 @@
+/* レスポンシブ対応スタイル */
+
+/* モバイルメニューボタン */
+.mobile-menu-toggle,
+.mobile-members-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #b9bbbe;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-toggle:hover,
+.mobile-members-toggle:hover {
+    background-color: #40444b;
+    color: #ffffff;
+}
+
+/* オーバーレイ */
+.mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.mobile-overlay.active {
+    display: block;
+}
+
+/* タブレット対応 */
+@media (max-width: 1024px) {
+    .members-sidebar {
+        width: 200px;
+    }
+}
+
+/* タブレット（小）対応 */
+@media (max-width: 768px) {
+    .left-sidebar {
+        width: 60px;
+    }
+    
+    .sidebar {
+        width: 200px;
+    }
+    
+    .channels-section {
+        padding: 12px 4px;
+    }
+    
+    .chat-input {
+        font-size: 14px;
+    }
+    
+    /* メンバーサイドバーは表示を維持し、幅のみ縮小 */
+    .members-sidebar {
+        width: 180px; /* 幅を少し縮小 */
+    }
+    
+    .mobile-members-toggle {
+        display: none; /* メンバートグルボタンは非表示 */
+    }
+}
+
+/* スマートフォン対応 */
+@media (max-width: 480px) {
+    .mobile-menu-toggle {
+        display: block;
+    }
+    
+    /* メンバートグルボタンは非表示（常に表示するため） */
+    .mobile-members-toggle {
+        display: none;
+    }
+    
+    .chat-header {
+        justify-content: space-between;
+        padding: 0 12px; /* パディングを少し縮小 */
+    }
+    
+    .channel-info {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .left-sidebar {
+        position: fixed;
+        left: -72px;
+        z-index: 1001;
+        transition: left 0.3s ease;
+        height: 100vh;
+        top: 0;
+    }
+    
+    .sidebar {
+        position: fixed;
+        left: -240px;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        height: 100vh;
+        top: 0;
+    }
+    
+    .left-sidebar.open {
+        left: 0;
+    }
+    
+    .sidebar.open {
+        left: 72px;
+    }
+    
+    .main-content {
+        width: calc(100% - 120px); /* メンバーサイドバーの幅を考慮 */
+        margin-left: 0;
+    }
+    
+    /* メンバーサイドバーを最小幅で常に表示 */
+    .members-sidebar {
+        width: 120px; /* 最小幅に設定 */
+        position: relative; /* 固定位置ではなく通常配置 */
+    }
+    
+    /* メンバーリストの項目を調整 */
+    .member-item {
+        padding: 8px 6px; /* パディングを縮小 */
+        font-size: 13px; /* フォントサイズを縮小 */
+    }
+    
+    .member-avatar {
+        width: 24px; /* アバターサイズを縮小 */
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .member-name {
+        font-size: 12px; /* ユーザー名のフォントサイズを縮小 */
+    }
+    
+    /* チャット入力エリアの調整 */
+    .chat-input-wrapper {
+        padding: 8px 12px;
+    }
+    
+    .chat-input {
+        font-size: 16px; /* iOS のズーム防止 */
+        min-height: 20px;
+    }
+    
+    .send-button {
+        padding: 8px;
+    }
+    
+    .file-upload-button {
+        padding: 8px;
+    }
+    
+    /* メッセージエリアの調整 */
+    .chat-messages {
+        padding: 8px 12px;
+    }
+    
+    .message {
+        padding: 8px 0;
+    }
+    
+    .message-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+    
+    .message-content {
+        margin-left: 12px;
+    }
+    
+    .message-header {
+        margin-bottom: 4px;
+    }
+    
+    .message-author {
+        font-size: 14px;
+    }
+    
+    .message-timestamp {
+        font-size: 11px;
+    }
+    
+    .message-text {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    /* メッセージ画像のスマホ対応 */
+    .message-attachment {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .message-attachment img {
+        max-width: 100% !important; /* コンテナの幅に完全に合わせる */
+        max-height: 250px !important; /* スマホでは高さも制限 */
+        width: auto !important;
+        height: auto !important;
+    }
+    
+    /* メッセージコンテナ自体も調整 */
+    .message-content {
+        max-width: calc(100vw - 60px) !important;
+        overflow: hidden;
+    }
+    
+    /* サーバーリストの調整 */
+    .server-item {
+        margin: 8px 4px;
+    }
+    
+    .server-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    /* チャンネルリストの調整 */
+    .channel-item,
+    .dm-user-item {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    /* ユーザー情報の調整 */
+    .user-info {
+        padding: 12px;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .nickname {
+        font-size: 14px;
+    }
+    
+    .user-status {
+        font-size: 12px;
+    }
+    
+    /* ボタンのタッチ対応 */
+    .channel-item,
+    .dm-user-item,
+    .server-item,
+    .member-item {
+        min-height: 44px; /* タッチターゲットサイズ */
+        display: flex;
+        align-items: center;
+    }
+    
+    /* スクロールバーの調整 */
+    .channels-list,
+    .chat-messages,
+    .members-list {
+        scrollbar-width: thin;
+    }
+    
+    .channels-list::-webkit-scrollbar,
+    .chat-messages::-webkit-scrollbar,
+    .members-list::-webkit-scrollbar {
+        width: 6px;
+    }
+}
+
+/* 極小画面対応 */
+@media (max-width: 320px) {
+    .chat-input {
+        font-size: 14px;
+    }
+    
+    .message-text {
+        font-size: 13px;
+    }
+    
+    .channel-info span {
+        font-size: 14px;
+    }
+    
+    .server-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+    
+    /* メインコンテンツの幅をさらに調整 */
+    .main-content {
+        width: calc(100% - 100px); /* メンバーサイドバーの縮小された幅を考慮 */
+    }
+    
+    /* メンバーサイドバーをさらに縮小 */
+    .members-sidebar {
+        width: 100px; /* さらに縮小 */
+    }
+    
+    .member-item {
+        padding: 6px 4px; /* さらにパディングを縮小 */
+        font-size: 12px;
+    }
+    
+    .member-avatar {
+        width: 20px; /* さらにアバターサイズを縮小 */
+        height: 20px;
+        font-size: 10px;
+    }
+    
+    .member-name {
+        font-size: 11px; /* さらにフォントサイズを縮小 */
+        display: none; /* 極小画面では名前を非表示 */
+    }
+    
+    /* メンバーリストのヘッダーも調整 */
+    .members-header {
+        padding: 8px 4px;
+        font-size: 11px;
+    }
+    
+    /* 極小画面での画像対応 */
+    .message-attachment img {
+        max-width: 100% !important;
+        max-height: 200px !important; /* 極小画面では高さをさらに制限 */
+    }
+}
+
+/* より細かいブレークポイントでの画像対応 */
+@media (max-width: 600px) {
+    .message-attachment {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .message-attachment img {
+        max-width: 100% !important;
+        max-height: 240px !important;
+        width: auto !important;
+        height: auto !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .message-attachment img {
+        max-height: 220px !important;
+    }
+}
+
+/* タッチサポート */
+.touch-active {
+    background-color: rgba(79, 84, 92, 0.32) !important;
+    transform: scale(0.98);
+    transition: all 0.1s ease;
+}
+
+/* タッチ対応の改善 */
+.channel-item,
+.server-item,
+.dm-user-item,
+.member-item {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* iOS Safari でのズーム無効化 */
+input[type="text"],
+textarea {
+    font-size: 16px;
+}
+
+@media (max-width: 480px) {
+    input[type="text"],
+    textarea {
+        font-size: 16px; /* iOS のダブルタップズーム防止 */
+    }
+}
+
+/* タブレット用の画像対応 */
+@media (min-width: 481px) and (max-width: 1024px) {
+    .message-attachment {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    .message-attachment img {
+        max-width: 100% !important; /* タブレットでもコンテナ幅に合わせる */
+        max-height: 280px !important;
+        width: auto !important;
+        height: auto !important;
+    }
+}
+
+/* デスクトップの小さいウィンドウ対応 */
+@media (min-width: 1025px) {
+    .message-attachment img {
+        max-width: min(400px, 100%) !important; /* 最大400pxまたはコンテナ幅の小さい方 */
+    }
+}
+
+/* 画像の読み込み時の最適化 */
+.message-attachment img {
+    image-rendering: auto;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: optimize-contrast;
+}
