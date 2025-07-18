@@ -138,6 +138,221 @@ nano .env.production  # 重要: パスワード等を設定
 ./deploy-production.sh
 ```
 
+## 📋 手動コマンド一覧
+
+### 🔧 基本セットアップコマンド
+
+```bash
+# リポジトリクローン
+git clone https://github.com/suzunayui/lazychillroom.git
+cd lazychillroom
+
+# 実行権限付与
+chmod +x *.sh
+
+# 環境ファイル準備
+cp .env.example .env.production
+
+# 設定ファイル編集
+nano .env.production
+```
+
+### 🚀 デプロイ関連コマンド
+
+```bash
+# 本番環境デプロイ
+./deploy-production.sh
+
+# 本番環境セットアップ（自動パスワード生成）
+./setup-production.sh --auto
+
+# 本番環境セットアップ（HTTPS対応）
+./setup-production.sh --domain your-domain.com --auto
+
+# セットアップのみ（デプロイしない）
+./setup-production.sh --skip-deploy
+```
+
+### 🐳 NPMスクリプトコマンド
+
+```bash
+# 開発環境
+npm run dev              # 開発サーバー起動
+npm run dev:db           # 開発用データベース起動
+npm run dev:all          # 開発環境完全起動
+
+# 本番環境
+npm run prod:deploy      # 本番環境デプロイ
+npm run prod:up          # 本番環境サービス開始
+npm run prod:down        # 本番環境サービス停止
+npm run prod:build       # 本番環境イメージ再ビルド
+npm run prod:logs        # 本番環境ログ表示
+
+# HTTPS/SSL
+npm run prod:https       # HTTPS完全自動デプロイ
+npm run prod:ssl-setup   # SSL証明書手動取得
+npm run prod:ssl-renew   # SSL証明書手動更新
+
+# メンテナンス
+npm run maintenance      # メンテナンスメニュー表示
+npm run backup          # データベースバックアップ
+npm run cleanup         # 不要データ削除
+```
+
+### 🔧 Podmanコマンド
+
+```bash
+# コンテナ管理
+podman-compose -f podman-compose.production.yaml up -d     # サービス開始
+podman-compose -f podman-compose.production.yaml down      # サービス停止
+podman-compose -f podman-compose.production.yaml down -v   # サービス停止（ボリューム削除）
+podman-compose -f podman-compose.production.yaml restart   # サービス再起動
+
+# ログ確認
+podman-compose -f podman-compose.production.yaml logs -f          # 全ログ
+podman-compose -f podman-compose.production.yaml logs -f app      # アプリログ
+podman-compose -f podman-compose.production.yaml logs -f postgres # DBログ
+podman-compose -f podman-compose.production.yaml logs -f redis    # Redisログ
+podman-compose -f podman-compose.production.yaml logs -f nginx    # Nginxログ
+
+# 状態確認
+podman-compose -f podman-compose.production.yaml ps       # コンテナ状態
+podman ps -a                                              # 全コンテナ
+podman volume ls                                          # ボリューム一覧
+podman network ls                                         # ネットワーク一覧
+
+# システム情報
+podman stats                                              # リソース使用状況
+podman system df                                          # ディスク使用量
+```
+
+### 🛠️ メンテナンススクリプト
+
+```bash
+# 基本メンテナンス
+./maintenance.sh status        # 状態確認
+./maintenance.sh start         # サービス開始
+./maintenance.sh stop          # サービス停止
+./maintenance.sh restart       # サービス再起動
+./maintenance.sh logs          # ログ表示
+./maintenance.sh monitor       # リアルタイム監視
+
+# データ管理
+./maintenance.sh backup        # データベースバックアップ
+./maintenance.sh restore       # データベース復元
+./maintenance.sh cleanup       # 不要データ削除
+./maintenance.sh full-clean    # 完全クリーンアップ
+
+# アップデート
+./maintenance.sh update        # アプリケーション更新
+./maintenance.sh rebuild       # イメージ再ビルド
+
+# 緊急対応
+./emergency-cleanup.sh         # 緊急クリーンアップ（強制全削除）
+```
+
+### 🔐 SSL/HTTPS管理
+
+```bash
+# SSL証明書管理
+./ssl-setup.sh your-domain.com    # SSL証明書取得
+./ssl-renew.sh                    # SSL証明書更新
+sudo certbot certificates         # 証明書一覧確認
+sudo certbot renew --dry-run      # 更新テスト
+
+# DNS確認
+nslookup your-domain.com          # DNS解決確認
+dig your-domain.com               # DNS詳細確認
+```
+
+### 🔥 ファイアウォール管理
+
+```bash
+# ファイアウォール設定
+./firewall-manager.sh setup       # 基本設定
+./firewall-manager.sh status      # 状態確認
+./firewall-manager.sh list        # ルール一覧
+./firewall-manager.sh add-rule    # ルール追加
+
+# UFW直接コマンド
+sudo ufw enable                   # ファイアウォール有効化
+sudo ufw status numbered          # 状態確認
+sudo ufw allow 80/tcp             # HTTPポート開放
+sudo ufw allow 443/tcp            # HTTPSポート開放
+sudo ufw delete 1                 # ルール削除
+```
+
+### 🔍 トラブルシューティング
+
+```bash
+# システム確認
+curl http://localhost/health      # ヘルスチェック
+curl -I http://localhost          # HTTPレスポンス確認
+netstat -tlnp | grep :80          # ポート使用状況
+lsof -i :80                       # ポート80使用プロセス
+
+# ログ分析
+tail -f /var/log/nginx/access.log     # Nginxアクセスログ
+tail -f /var/log/nginx/error.log      # Nginxエラーログ
+journalctl -u podman               # Podmanサービスログ
+
+# リソース確認
+df -h                             # ディスク使用量
+free -h                           # メモリ使用量
+top                               # プロセス確認
+htop                              # プロセス確認（詳細）
+
+# プロセス管理
+ps aux | grep node                # Nodeプロセス確認
+ps aux | grep podman              # Podmanプロセス確認
+killall -9 node                   # 全Nodeプロセス強制終了
+```
+
+### 🔄 Git管理
+
+```bash
+# コード更新
+git pull origin main              # 最新コード取得
+git status                        # 変更状況確認
+git log --oneline -10             # コミット履歴確認
+
+# ブランチ管理
+git branch -a                     # 全ブランチ確認
+git checkout main                 # mainブランチに切り替え
+git reset --hard origin/main      # ローカル変更を破棄して最新に同期
+```
+
+### 📦 パッケージ管理
+
+```bash
+# npm関連
+npm install                       # 依存関係インストール
+npm update                        # パッケージ更新
+npm audit fix                     # セキュリティ脆弱性修正
+npm run build                     # プロダクションビルド
+
+# システムパッケージ
+sudo apt update                   # パッケージリスト更新
+sudo apt upgrade                  # システム更新
+sudo apt install curl git        # 必要パッケージインストール
+```
+
+### 💾 データベース管理
+
+```bash
+# PostgreSQL直接操作
+podman-compose -f podman-compose.production.yaml exec postgres psql -U lazychillroom_user -d lazychillroom_db
+
+# データベースバックアップ（手動）
+podman-compose -f podman-compose.production.yaml exec postgres pg_dump -U lazychillroom_user lazychillroom_db > backup.sql
+
+# データベース復元（手動）
+podman-compose -f podman-compose.production.yaml exec -T postgres psql -U lazychillroom_user -d lazychillroom_db < backup.sql
+
+# Redis操作
+podman-compose -f podman-compose.production.yaml exec redis redis-cli
+```
+
 ### 🔧 設定が必要な項目（手動設定の場合）
 
 `.env.production`で以下を必ず変更してください：
