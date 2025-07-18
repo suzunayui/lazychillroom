@@ -12,6 +12,7 @@ echo "   - ゼロタッチインストール"
 echo ""
 
 # セットアップスクリプトを自動モードで実行
+echo "🚀 完全自動セットアップを開始中..."
 curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --auto
 
 echo ""

@@ -64,12 +64,17 @@ if [ "$ENABLE_HTTPS" = true ]; then
 fi
 echo ""
 
-# 実行ユーザーの確認
-if [ "$EUID" -eq 0 ]; then
-    echo "❌ このスクリプトはrootユーザーで実行しないでください"
-    echo "一般ユーザーで実行し、必要に応じてsudoを使用してください"
-    exit 1
+# sudo権限の確認
+if ! sudo -n true 2>/dev/null; then
+    echo "🔐 このスクリプトはシステム設定の変更にsudo権限が必要です"
+    echo "パスワードを入力してください..."
+    sudo -v || {
+        echo "❌ sudo権限が必要です。管理者に相談してください"
+        exit 1
+    }
 fi
+
+echo "✅ sudo権限が確認されました"
 
 # システム情報の表示
 echo "📋 システム情報:"
@@ -170,15 +175,23 @@ echo "✅ パッケージインストール完了"
 
 # 特権ポートの設定（rootless Podmanでポート80/443を使用可能にする）
 echo "🔧 特権ポート設定を構成中（HTTP/HTTPS対応）..."
-if ! grep -q "net.ipv4.ip_unprivileged_port_start" /etc/sysctl.conf; then
-    echo "net.ipv4.ip_unprivileged_port_start=80" | sudo tee -a /etc/sysctl.conf
-    echo "✅ 特権ポート設定を追加しました（ポート80-443が使用可能）"
+current_port_start=$(sysctl -n net.ipv4.ip_unprivileged_port_start 2>/dev/null || echo "1024")
+
+if [ "$current_port_start" -ne 80 ]; then
+    echo "⚠️  特権ポート設定が80ではありません（現在: $current_port_start）"
+    
+    # /etc/sysctl.confに設定を追加（まだない場合）
+    if ! grep -q "net.ipv4.ip_unprivileged_port_start" /etc/sysctl.conf; then
+        echo "net.ipv4.ip_unprivileged_port_start=80" | sudo tee -a /etc/sysctl.conf
+        echo "✅ 特権ポート設定を/etc/sysctl.confに追加しました"
+    fi
     
     # 設定を即座に適用
+    echo "🔧 特権ポート設定を適用中..."
     sudo sysctl net.ipv4.ip_unprivileged_port_start=80
-    echo "✅ 特権ポート設定を適用しました（再起動後も有効）"
+    echo "✅ 特権ポート設定を80に適用しました（ポート80-443が使用可能）"
 else
-    echo "✅ 特権ポート設定は既に存在します（ポート80-443使用可能）"
+    echo "✅ 特権ポート設定は既に正常です（ポート80-443使用可能）"
 fi
 
 # LazyChillRoomのクローン

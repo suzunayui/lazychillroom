@@ -2,6 +2,29 @@
 
 ## ⚡ 最速デプロイ（Ubuntu 24.04）
 
+### 🔥 ワンコマンド完全自動デプロイ
+
+**🔒 HTTPS完全自動（推奨）：**
+```bash
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy-https.sh | bash -s -- your-domain.com
+```
+
+**🌐 HTTP完全自動：**
+```bash
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy.sh | bash
+```
+
+**これだけで完了！**
+- ✅ 全自動でシステム構築〜アプリ起動まで完了
+- ✅ パスワード自動生成（32文字セキュア）
+- ✅ HTTPS自動設定（Let's Encrypt）
+- ✅ ファイアウォール自動設定
+- ✅ **特権ポート設定自動適用（80/443）**
+- ✅ **既存コンテナ自動クリーンアップ**
+- ✅ 完全にゼロタッチインストール
+
+---
+
 ### 🚀 3ステップ本番デプロイ
 
 **最も簡単（HTTPS対応）：** スクリプトダウンロード → 実行権限付与 → HTTPS自動デプロイ
@@ -14,7 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-
 chmod +x setup-production.sh
 
 # 3. HTTPS完全自動デプロイ実行（環境準備→Podmanコンテナ起動）
-./setup-production.sh --domain your-domain.com --auto
+sudo ./setup-production.sh --domain your-domain.com --auto
 ```
 
 **HTTP版（ドメインなし）：**
@@ -26,7 +49,7 @@ curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-
 chmod +x setup-production.sh
 
 # 3. HTTP完全自動デプロイ実行（環境準備→Podmanコンテナ起動）
-./setup-production.sh --auto
+sudo ./setup-production.sh --auto
 ```
 
 **機能：**

@@ -49,6 +49,37 @@ echo "📁 本番環境用 .env ファイルをセットアップ中..."
 cp .env.production .env
 echo "✅ .env.production → .env コピー完了"
 
+# 特権ポート設定の確認と適用
+echo "🔧 特権ポート設定を確認・適用中..."
+current_port_start=$(sysctl -n net.ipv4.ip_unprivileged_port_start 2>/dev/null || echo "1024")
+if [ "$current_port_start" -ne 80 ]; then
+    echo "⚠️  特権ポート設定が80ではありません（現在: $current_port_start）"
+    echo "🔧 設定を適用中..."
+    sudo sysctl net.ipv4.ip_unprivileged_port_start=80
+    echo "✅ 特権ポート設定を80に変更しました"
+else
+    echo "✅ 特権ポート設定は正常です（80）"
+fi
+
+# 既存コンテナのクリーンアップ（競合回避）
+echo "🧹 既存コンテナをクリーンアップ中..."
+if podman-compose -f podman-compose.production.yaml ps -q 2>/dev/null | grep -q .; then
+    echo "🛑 既存サービスを停止中..."
+    podman-compose -f podman-compose.production.yaml down 2>/dev/null || true
+    sleep 3
+fi
+
+# 個別コンテナの強制削除（名前競合回避）
+container_names=("lazychillroom_postgres_1" "lazychillroom_redis_1" "lazychillroom_app_1" "lazychillroom_nginx_1")
+for container in "${container_names[@]}"; do
+    if podman container exists "$container" 2>/dev/null; then
+        echo "🗑️  既存コンテナを削除中: $container"
+        podman rm -f "$container" 2>/dev/null || true
+    fi
+done
+
+echo "✅ コンテナクリーンアップ完了"
+
 # Node.jsプロセス管理の準備
 echo "⚙️  Node.jsプロセス管理準備中..."
 export NODE_ENV=production
