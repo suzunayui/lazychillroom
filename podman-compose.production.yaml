@@ -1,27 +1,139 @@
 version: '3.8'
 
+# Podman特有の設定
+# 権限ポート（80/443）は cap_add: NET_BIND_SERVICE で対応
+# 環境変数は以下で自動生成されます
+
 services:
+  # 環境変数初期化サービス（一度だけ実行）
+  init:
+    image: docker.io/library/alpine:latest
+    command: sh -c '
+      # 必要なパッケージをインストール
+      apk add --no-cache openssl;
+      
+      # ドメイン名の確認
+      DOMAIN=${DOMAIN:-};
+      
+      if [ ! -f /shared/.env.production ]; then
+        echo "🔐 環境設定ファイルを生成中...";
+        DB_PASSWORD=$$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32);
+        REDIS_PASSWORD=$$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-32);
+        JWT_SECRET=$$(openssl rand -base64 64 | tr -d "=+/" | cut -c1-64);
+        
+        # HTTPS設定
+        if [ -n "$$DOMAIN" ]; then
+          echo "🔒 HTTPS設定を有効化: $$DOMAIN";
+          SSL_ENABLED=true;
+          echo "📋 Let'\''s Encrypt証明書は起動後に取得されます";
+        else
+          echo "🌐 HTTP設定で起動（ドメイン未指定）";
+          SSL_ENABLED=false;
+        fi
+        
+        cat > /shared/.env.production << EOF
+NODE_ENV=production
+PORT=3000
+DB_HOST=postgres
+DB_PORT=5432
+DB_USER=lazychillroom_user
+DB_PASSWORD=$$DB_PASSWORD
+DB_NAME=lazychillroom
+POSTGRES_USER=lazychillroom_user
+POSTGRES_PASSWORD=$$DB_PASSWORD
+POSTGRES_DB=lazychillroom
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=$$REDIS_PASSWORD
+REDIS_DB=0
+JWT_SECRET=$$JWT_SECRET
+UPLOAD_PATH=./uploads
+MAX_FILE_SIZE=10485760
+ALLOWED_EXTENSIONS=jpg,jpeg,png,gif,webp,mp4,webm,pdf,txt,docx
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX_REQUESTS=100
+BCRYPT_ROUNDS=12
+TRUST_PROXY=true
+SECURE_COOKIES=$$SSL_ENABLED
+SESSION_SECURE=$$SSL_ENABLED
+SSL_ENABLED=$$SSL_ENABLED
+DOMAIN=$$DOMAIN
+EOF
+        echo "✅ 環境設定ファイル生成完了";
+        echo "📋 生成されたパスワード:";
+        echo "   DB: $$DB_PASSWORD";
+        echo "   Redis: $$REDIS_PASSWORD";
+        echo "   JWT: $${JWT_SECRET:0:20}...";
+        if [ -n "$$DOMAIN" ]; then
+          echo "🔒 HTTPS: 有効 ($$DOMAIN)";
+        else
+          echo "🌐 HTTP: ローカル起動";
+        fi
+      else
+        echo "✅ 環境設定ファイルは既に存在します";
+      fi
+    '
+    environment:
+      - DOMAIN=${DOMAIN:-}
+    volumes:
+      - .:/shared
+    restart: "no"
+
+  # SSL証明書取得サービス（ドメイン指定時のみ）
+  certbot:
+    image: docker.io/certbot/certbot:latest
+    command: sh -c '
+      DOMAIN=${DOMAIN:-};
+      if [ -n "$$DOMAIN" ]; then
+        if [ ! -f /etc/letsencrypt/live/$$DOMAIN/fullchain.pem ]; then
+          echo "🔒 SSL証明書を取得中: $$DOMAIN";
+          certbot certonly --standalone --non-interactive --agree-tos --email admin@$$DOMAIN -d $$DOMAIN --cert-name $$DOMAIN;
+          if [ $$? -eq 0 ]; then
+            echo "✅ SSL証明書取得完了: $$DOMAIN";
+            mkdir -p /nginx-ssl;
+            cp /etc/letsencrypt/live/$$DOMAIN/fullchain.pem /nginx-ssl/;
+            cp /etc/letsencrypt/live/$$DOMAIN/privkey.pem /nginx-ssl/;
+            echo "📋 証明書をNginxディレクトリにコピー完了";
+          else
+            echo "❌ SSL証明書取得に失敗しました";
+            echo "⚠️  HTTPモードで起動します";
+          fi
+        else
+          echo "✅ SSL証明書は既に存在します: $$DOMAIN";
+          mkdir -p /nginx-ssl;
+          cp /etc/letsencrypt/live/$$DOMAIN/fullchain.pem /nginx-ssl/ 2>/dev/null || true;
+          cp /etc/letsencrypt/live/$$DOMAIN/privkey.pem /nginx-ssl/ 2>/dev/null || true;
+        fi
+      else
+        echo "🌐 ドメインが指定されていません。HTTPモードで起動します";
+      fi
+    '
+    environment:
+      - DOMAIN=${DOMAIN:-}
+    volumes:
+      - ./nginx/ssl:/nginx-ssl
+      - certbot_data:/etc/letsencrypt
+    ports:
+      - "80:80"  # certbot standalone用
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: "no"
   app:
     build: .
     ports:
       - "3000:3000"
+    env_file:
+      - .env.production
     environment:
       - NODE_ENV=production
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=lazychillroom
-      - DB_USER=lazychillroom_user
-      - DB_PASSWORD=${DB_PASSWORD}
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=lazychillroom
-      - POSTGRES_USER=lazychillroom_user
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
       - REDIS_DB=0
-      - JWT_SECRET=${JWT_SECRET}
       - TRUST_PROXY=true
       - SECURE_COOKIES=true
       - SESSION_SECURE=true
@@ -29,6 +141,8 @@ services:
       - ./uploads:/app/uploads
       - app_logs:/app/logs
     depends_on:
+      init:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -55,14 +169,16 @@ services:
 
   postgres:
     image: docker.io/library/postgres:15
+    env_file:
+      - .env.production
     environment:
-      POSTGRES_USER: lazychillroom_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: lazychillroom
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data:Z
       - ./migrations/postgresql-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    depends_on:
+      init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lazychillroom_user -d lazychillroom"]
       interval: 10s
@@ -81,11 +197,16 @@ services:
 
   redis:
     image: docker.io/library/redis:7-alpine
-    command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    env_file:
+      - .env.production
+    command: sh -c 'redis-server --requirepass "$$REDIS_PASSWORD" --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru'
     volumes:
       - redis_data:/data:Z
+    depends_on:
+      init:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD", "sh", "-c", "redis-cli -a \"$$REDIS_PASSWORD\" ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -103,6 +224,7 @@ services:
   # 本番環境ではNginxリバースプロキシを追加
   nginx:
     image: docker.io/library/nginx:alpine
+    # 権限ポート（80/443）にバインド
     ports:
       - "80:80"
       - "443:443"
@@ -112,6 +234,7 @@ services:
       - nginx_logs:/var/log/nginx
     depends_on:
       - app
+      - certbot
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
@@ -126,6 +249,12 @@ services:
           memory: 128M
     security_opt:
       - no-new-privileges:true
+    # 権限ポート（80/443）へのバインドを許可
+    cap_add:
+      - NET_BIND_SERVICE
+    # 注意: rootlessモードでは以下の設定も必要な場合があります:
+    # privileged: true  # 最大権限（セキュリティリスクあり）
+    # user: "0:0"       # rootユーザーで実行
 
 volumes:
   postgres_data:
@@ -135,4 +264,6 @@ volumes:
   app_logs:
     driver: local
   nginx_logs:
+    driver: local
+  certbot_data:
     driver: local
