@@ -22,34 +22,8 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-deploy)
             SKIP_DEPLOY=true
-            shif# 自動デプロイ実行の確認
-if [ "$SKIP_DEPLOY" = false ]; then
-    if [ "$AUTO_MODE" = true ]; then
-        echo "🤖 自動モードのため、デプロイを自動実行します..."
-        
-        # 既存プロセスの確認
-        echo "🔍 既存のLazyChillRoomプロセスを確認中..."
-        RUNNING_CONTAINERS=$(podman ps --filter "label=com.docker.compose.project=lazychillroom" --format "{{.Names}}" 2>/dev/null || echo "")
-        
-        if [ -n "$RUNNING_CONTAINERS" ]; then
-            echo "⚠️  既存のLazyChillRoomコンテナが実行中です:"
-            echo "$RUNNING_CONTAINERS" | while read -r container; do
-                echo "   - $container"
-            done
-            echo "🔄 既存のデプロイメントを更新します..."
-        else
-            echo "✅ 既存のLazyChillRoomプロセスは見つかりませんでした"
-        fi
-        echo ""
-        
-        if ./deploy-production.sh; then
-            echo ""
-            echo "🚀 デプロイが正常に完了しました！"
-            echo "🌐 アプリケーションにアクセス: http://$(hostname -I | awk '{print $1}')"
-        else
-            echo "❌ デプロイに失敗しました。ログを確認してください。"
-            exit 1
-        fi  ;;
+            shift
+            ;;
         --domain|-d)
             DOMAIN="$2"
             ENABLE_HTTPS=true
@@ -82,6 +56,37 @@ done
 
 echo "🚀 LazyChillRoom 本番環境セットアップ開始"
 echo "対象OS: Ubuntu 24.04"
+
+# 自動デプロイ実行の確認
+if [ "$SKIP_DEPLOY" = false ]; then
+    if [ "$AUTO_MODE" = true ]; then
+        echo "🤖 自動モードのため、デプロイを自動実行します..."
+        
+        # 既存プロセスの確認
+        echo "🔍 既存のLazyChillRoomプロセスを確認中..."
+        RUNNING_CONTAINERS=$(podman ps --filter "label=com.docker.compose.project=lazychillroom" --format "{{.Names}}" 2>/dev/null || echo "")
+        
+        if [ -n "$RUNNING_CONTAINERS" ]; then
+            echo "⚠️  既存のLazyChillRoomコンテナが実行中です:"
+            echo "$RUNNING_CONTAINERS" | while read -r container; do
+                echo "   - $container"
+            done
+            echo "🔄 既存のデプロイメントを更新します..."
+        else
+            echo "✅ 既存のLazyChillRoomプロセスは見つかりませんでした"
+        fi
+        echo ""
+        
+        if ./deploy-production.sh; then
+            echo ""
+            echo "🚀 デプロイが正常に完了しました！"
+            echo "🌐 アプリケーションにアクセス: http://$(hostname -I | awk '{print $1}')"
+        else
+            echo "❌ デプロイに失敗しました。ログを確認してください。"
+            exit 1
+        fi
+    fi
+fi
 if [ "$AUTO_MODE" = true ]; then
     echo "🤖 完全自動モードで実行中..."
 fi
