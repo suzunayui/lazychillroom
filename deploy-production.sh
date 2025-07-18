@@ -44,6 +44,11 @@ done
 
 echo "✅ 本番環境設定確認完了"
 
+# 本番環境用の .env ファイルを作成
+echo "📁 本番環境用 .env ファイルをセットアップ中..."
+cp .env.production .env
+echo "✅ .env.production → .env コピー完了"
+
 # Node.jsプロセス管理の準備
 echo "⚙️  Node.jsプロセス管理準備中..."
 export NODE_ENV=production

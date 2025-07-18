@@ -31,7 +31,8 @@ chmod +x setup-production.sh
 
 **機能：**
 - ✅ 必要パッケージの自動インストール（Podman, podman-compose含む）
-- ✅ Node.js v22自動インストール（依存関係解決含む）
+- ✅ Node.js v22自動インストール + npm v11.4.2（依存関係解決含む）
+- ✅ **`.env.production` ファイル自動生成（.env.exampleから）**
 - ✅ セキュアなパスワード自動生成（32文字）
 - ✅ JWT_SECRET自動生成（64文字）
 - ✅ ファイアウォール設定（UFW）

@@ -183,15 +183,15 @@ else
     cd "$PROJECT_DIR"
 fi
 
-# パスワード生成関数
+# パスワード生成関数（特殊文字を除外）
 generate_secure_password() {
-    # 32文字のランダムパスワードを生成（英数字+記号）
-    openssl rand -base64 32 | tr -d "=+/" | cut -c1-32
+    # 32文字のランダムパスワードを生成（英数字のみ、特殊文字を除外）
+    openssl rand -base64 48 | tr -d "=+/|" | tr -cd 'A-Za-z0-9' | cut -c1-32
 }
 
 generate_jwt_secret() {
-    # 64文字のJWTシークレットを生成
-    openssl rand -base64 64 | tr -d "=+/" | cut -c1-64
+    # 64文字のJWTシークレットを生成（英数字のみ、特殊文字を除外）
+    openssl rand -base64 96 | tr -d "=+/|" | tr -cd 'A-Za-z0-9' | cut -c1-64
 }
 
 # 環境設定ファイルの作成
@@ -201,6 +201,10 @@ if [ ! -f ".env.production" ]; then
     if [ -f ".env.example" ]; then
         echo "🔐 セキュアなパスワードを生成中..."
         
+        # .env.exampleから.env.productionを作成
+        echo "📁 .env.example から .env.production を作成中..."
+        cp .env.example .env.production
+        
         # セキュアなパスワードを生成
         DB_PASSWORD=$(generate_secure_password)
         REDIS_PASSWORD=$(generate_secure_password)
@@ -208,16 +212,14 @@ if [ ! -f ".env.production" ]; then
         
         echo "✅ セキュアなパスワードを生成しました"
         
-        # .env.exampleをコピーしてパスワードを置換
-        cp .env.example .env.production
-        
-        # 生成されたパスワードで置換
+        # 生成されたパスワードで置換（特殊文字に対応）
         sed -i "s|your_secure_database_password_here|${DB_PASSWORD}|g" .env.production
         sed -i "s|your_secure_redis_password_here|${REDIS_PASSWORD}|g" .env.production
         sed -i "s|your_very_long_and_secure_jwt_secret_key_minimum_64_characters_required|${JWT_SECRET}|g" .env.production
         
-        # ドメイン設定
+        # ドメイン設定（変数を安全にエスケープ）
         if [ "$ENABLE_HTTPS" = true ]; then
+            ESCAPED_DOMAIN=$(echo "$DOMAIN" | sed 's/[[\.*^$()+?{|]/\\&/g')
             sed -i "s|# DOMAIN=your-domain.com|DOMAIN=$DOMAIN|g" .env.production
             sed -i "s|# SSL_ENABLED=true|SSL_ENABLED=true|g" .env.production
             echo "✅ ドメイン設定を追加: $DOMAIN"
@@ -445,8 +447,9 @@ if [ "$ENABLE_HTTPS" = true ] && [ -n "$DOMAIN" ]; then
         sed -i "s|# ssl_prefer_server_ciphers off;|ssl_prefer_server_ciphers off;|g" nginx/nginx.conf
         sed -i "s|# add_header Strict-Transport-Security \"max-age=63072000\" always;|add_header Strict-Transport-Security \"max-age=63072000\" always;|g" nginx/nginx.conf
         
-        # HTTPからHTTPSへのリダイレクトを有効化
-        sed -i "s|# return 301 https://\$server_name\$request_uri;|return 301 https://$DOMAIN\$request_uri;|g" nginx/nginx.conf
+        # HTTPからHTTPSへのリダイレクトを有効化（ドメイン名をエスケープ）
+        ESCAPED_DOMAIN=$(echo "$DOMAIN" | sed 's/[[\.*^$()+?{|]/\\&/g')
+        sed -i "s|# return 301 https://\\\$server_name\\\$request_uri;|return 301 https://$ESCAPED_DOMAIN\$request_uri;|g" nginx/nginx.conf
         sed -i "s|# 開発/テスト用にHTTPで直接処理|# HTTPからHTTPSへのリダイレクト|g" nginx/nginx.conf
         
         # location ブロックをコメントアウト（HTTPSに移行するため）
