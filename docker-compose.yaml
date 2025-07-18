@@ -1,7 +1,8 @@
 services:
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: ./Dockerfile
     container_name: lazy-backend
     expose:
       - "3000"

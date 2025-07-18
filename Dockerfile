@@ -9,7 +9,7 @@ COPY package*.json ./
 RUN npm install
 
 # ソースコードコピー
-COPY . .
+COPY ./backend /app
 
 # 環境変数
 ENV NODE_ENV=production
