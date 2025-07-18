@@ -12,6 +12,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
+      - DB_PASSWORD=${DB_PASSWORD}
       - DB_NAME=lazychill
       - REDIS_HOST=redis
       - REDIS_PORT=6379
