@@ -18,22 +18,23 @@ curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-d
 
 ## 📋 手動デプロイ
 
-### 1. リポジトリクローン
+### 1. 基本セットアップ
 ```bash
 git clone https://github.com/suzunayui/lazychillroom.git
 cd lazychillroom
+chmod +x *.sh
 ```
 
-### 2. 完全デプロイ実行
+### 2. 環境設定
 ```bash
-npm run prod:all  # これだけで完了！
+cp .env.example .env.production
+nano .env.production  # パスワードを設定
 ```
 
-**自動で実行される内容：**
-- 依存関係インストール (`npm install`)
-- セキュアなパスワード自動生成
-- データベース・Redis・アプリ・Caddy起動
-- データベーステーブル作成
+### 3. デプロイ実行
+```bash
+npm run prod:all  # 完全デプロイ
+```
 
 ## 🛠️ よく使うコマンド
 

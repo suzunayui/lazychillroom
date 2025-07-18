@@ -1,0 +1,28 @@
+# Caddyfile - 自動SSL対応のシンプル設定
+
+{
+    # グローバル設定
+    email admin@example.com
+}
+
+# ローカル環境（ドメイン未指定時）
+:80 {
+    # Node.jsアプリへのプロキシ
+    reverse_proxy app:3000
+
+    # ヘルスチェックエンドポイント
+    handle /health {
+        reverse_proxy app:3000
+    }
+
+    # アップロードファイル用（大きなファイル対応）
+    request_body {
+        max_size 10MB
+    }
+
+    # アクセスログ
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}

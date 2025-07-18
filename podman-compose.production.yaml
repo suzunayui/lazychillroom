@@ -80,57 +80,9 @@ services:
       - .:/shared
     restart: "no"
 
-  # SSL証明書取得サービス（ドメイン指定時のみ）
-  certbot:
-    image: docker.io/certbot/certbot:latest
-    command: |
-      sh -c '
-        DOMAIN=$${DOMAIN:-};
-        if [ -n "$$DOMAIN" ]; then
-          if [ ! -f /etc/letsencrypt/live/$$DOMAIN/fullchain.pem ]; then
-            echo "🔒 SSL証明書を取得中: $$DOMAIN";
-            
-            # Nginxが起動していない場合のみstandaloneモード使用
-            if ! nc -z localhost 80 2>/dev/null; then
-              echo "📋 スタンドアロンモードで証明書を取得中...";
-              certbot certonly --standalone --non-interactive --agree-tos --email admin@$$DOMAIN -d $$DOMAIN --cert-name $$DOMAIN;
-            else
-              echo "📋 Webrootモードで証明書を取得中...";
-              mkdir -p /var/www/certbot;
-              certbot certonly --webroot -w /var/www/certbot --non-interactive --agree-tos --email admin@$$DOMAIN -d $$DOMAIN --cert-name $$DOMAIN;
-            fi
-            
-            if [ $$? -eq 0 ]; then
-              echo "✅ SSL証明書取得完了: $$DOMAIN";
-              mkdir -p /nginx-ssl;
-              cp /etc/letsencrypt/live/$$DOMAIN/fullchain.pem /nginx-ssl/;
-              cp /etc/letsencrypt/live/$$DOMAIN/privkey.pem /nginx-ssl/;
-              echo "📋 証明書をNginxディレクトリにコピー完了";
-            else
-              echo "❌ SSL証明書取得に失敗しました";
-              echo "⚠️  HTTPモードで起動します";
-            fi
-          else
-            echo "✅ SSL証明書は既に存在します: $$DOMAIN";
-            mkdir -p /nginx-ssl;
-            cp /etc/letsencrypt/live/$$DOMAIN/fullchain.pem /nginx-ssl/ 2>/dev/null || true;
-            cp /etc/letsencrypt/live/$$DOMAIN/privkey.pem /nginx-ssl/ 2>/dev/null || true;
-          fi
-        else
-          echo "🌐 ドメインが指定されていません。HTTPモードで起動します";
-        fi
-      '
-    environment:
-      - DOMAIN=${DOMAIN:-}
-    volumes:
-      - ./nginx/ssl:/nginx-ssl
-      - certbot_data:/etc/letsencrypt
-      - certbot_webroot:/var/www/certbot
-    # ポート80は削除（Nginxとの競合を避ける）
-    depends_on:
-      init:
-        condition: service_completed_successfully
-    restart: "no"
+  # SSL証明書取得サービス（不要：Caddyが自動で処理）
+  # certbot:
+  #   Caddyが自動でSSL証明書を取得・更新するため、このサービスは不要です
   app:
     build: .
     ports:
@@ -234,21 +186,19 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  # 本番環境ではNginxリバースプロキシを追加
-  nginx:
-    image: docker.io/library/nginx:alpine
+  # 本番環境ではCaddyリバースプロキシを使用（自動SSL！）
+  caddy:
+    image: docker.io/library/caddy:alpine
     # 権限ポート（80/443）にバインド
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - nginx_logs:/var/log/nginx
-      - certbot_webroot:/var/www/certbot:ro
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     depends_on:
       - app
-      - certbot
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
@@ -266,9 +216,8 @@ services:
     # 権限ポート（80/443）へのバインドを許可
     cap_add:
       - NET_BIND_SERVICE
-    # 注意: rootlessモードでは以下の設定も必要な場合があります:
-    # privileged: true  # 最大権限（セキュリティリスクあり）
-    # user: "0:0"       # rootユーザーで実行
+    environment:
+      - DOMAIN=${DOMAIN:-}
 
 volumes:
   postgres_data:
@@ -277,9 +226,7 @@ volumes:
     driver: local
   app_logs:
     driver: local
-  nginx_logs:
+  caddy_data:
     driver: local
-  certbot_data:
-    driver: local
-  certbot_webroot:
+  caddy_config:
     driver: local

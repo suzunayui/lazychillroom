@@ -1,0 +1,683 @@
+# LazyChillRoom 本番環境デプロイガイド
+
+## ⚡ 最速デプロイ（Ubuntu 24.04）
+
+### 🔥 ワンコマンド完全自動デプロイ
+
+**🔒 HTTPS完全自動（推奨）：**
+```bash
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy-https.sh | bash -s -- your-domain.com
+```
+
+**🌐 HTTP完全自動：**
+```bash
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy.sh | bash
+```
+
+**これだけで完了！**
+- ✅ 全自動でシステム構築〜アプリ起動まで完了
+- ✅ **既存プロセス自動検出・適切な処理選択**
+- ✅ パスワード自動生成（32文字セキュア）
+- ✅ HTTPS自動設定（Let's Encrypt）
+- ✅ ファイアウォール自動設定
+- ✅ **特権ポート設定自動適用（80/443）**
+- ✅ **既存コンテナ・ボリューム完全クリーンアップ**
+- ✅ **孤立リソース自動削除**
+- ✅ 完全にゼロタッチインストール
+
+---
+
+### 🚀 3ステップ本番デプロイ
+
+**最も簡単（HTTPS対応）：** スクリプトダウンロード → 実行権限付与 → HTTPS自動デプロイ
+
+```bash
+# 1. セットアップスクリプトをダウンロード
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh -o setup-production.sh
+
+# 2. 実行権限を付与
+chmod +x setup-production.sh
+
+# 3. HTTPS完全自動デプロイ実行（環境準備→Podmanコンテナ起動）
+sudo ./setup-production.sh --domain your-domain.com --auto
+```
+
+**HTTP版（ドメインなし）：**
+```bash
+# 1. セットアップスクリプトをダウンロード
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh -o setup-production.sh
+
+# 2. 実行権限を付与
+chmod +x setup-production.sh
+
+# 3. HTTP完全自動デプロイ実行（環境準備→Podmanコンテナ起動）
+sudo ./setup-production.sh --auto
+```
+
+**機能：**
+- ✅ 必要パッケージの自動インストール（Podman, podman-compose含む）
+- ✅ Node.js v22自動インストール + npm v11.4.2（依存関係解決含む）
+- ✅ **`.env.production` ファイル自動生成（.env.exampleから）**
+- ✅ セキュアなパスワード自動生成（32文字）
+- ✅ JWT_SECRET自動生成（64文字）
+- ✅ ファイアウォール設定（UFW）
+- ✅ SSL証明書自動取得（HTTPS版）
+- ✅ **Podmanコンテナ自動起動（PostgreSQL, Redis, App, Nginx）**
+- ✅ systemd自動起動設定
+- ✅ 完全なWebアプリケーション稼働
+
+## ⚡ ワンライナーデプロイ（Ubuntu 24.04）
+
+### 🔒 HTTPS完全自動デプロイ（推奨）
+
+**最も安全：** ドメイン名でHTTPS自動設定
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy-https.sh | bash -s -- your-domain.com
+```
+
+**前提条件：**
+- ドメインのAレコードでサーバーIPアドレスを指定
+- DNS設定が反映されていること
+
+**機能：**
+- ✅ Let's Encrypt SSL証明書自動取得
+- ✅ HTTPS自動リダイレクト設定  
+- ✅ セキュアなパスワード自動生成
+- ✅ 自動デプロイ実行
+- ✅ SSL証明書自動更新設定
+
+### 🤖 完全自動デプロイ（HTTP）
+
+**最も簡単：** パスワード自動生成 + 自動デプロイ
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/auto-deploy.sh | bash
+```
+
+**機能：**
+- ✅ 必要パッケージの自動インストール
+- ✅ セキュアなパスワード自動生成（32文字）
+- ✅ JWT_SECRET自動生成（64文字）
+- ✅ 自動デプロイ実行
+- ✅ ファイアウォール設定
+- ✅ ゼロタッチインストール
+
+### 🔧 セットアップのみ（自動パスワード生成）
+
+```bash
+# HTTPS対応セットアップ（パスワード自動生成、デプロイは手動）
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --auto --domain your-domain.com
+
+# HTTP版セットアップ（パスワード自動生成、デプロイは手動）
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --auto
+```
+
+### 方法1: ワンライナーセットアップ（手動設定）
+
+```bash
+# HTTPS対応（手動設定）
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash -s -- --domain your-domain.com
+
+# HTTP版（手動設定）
+curl -fsSL https://raw.githubusercontent.com/suzunayui/lazychillroom/main/setup-production.sh | bash
+```
+
+### 方法2: 手動セットアップ
+
+```bash
+# 1. リポジトリクローン
+git clone https://github.com/suzunayui/lazychillroom.git
+cd lazychillroom
+
+# 2. 環境設定
+cp .env.example .env.production
+nano .env.production  # 重要: パスワード等を設定
+
+# 3. デプロイ実行
+./deploy-production.sh
+```
+
+## 📋 手動コマンド一覧
+
+### 🔧 基本セットアップコマンド
+
+```bash
+# リポジトリクローン
+git clone https://github.com/suzunayui/lazychillroom.git
+cd lazychillroom
+
+# 実行権限付与
+chmod +x *.sh
+
+# 環境ファイル準備
+cp .env.example .env.production
+
+# 設定ファイル編集
+nano .env.production
+```
+
+### 🚀 デプロイ関連コマンド
+
+```bash
+# 本番環境デプロイ
+./deploy-production.sh
+
+# 本番環境セットアップ（自動パスワード生成）
+./setup-production.sh --auto
+
+# 本番環境セットアップ（HTTPS対応）
+./setup-production.sh --domain your-domain.com --auto
+
+# セットアップのみ（デプロイしない）
+./setup-production.sh --skip-deploy
+```
+
+### 🐳 NPMスクリプトコマンド
+
+```bash
+# 開発環境
+npm run dev              # 開発サーバー起動
+npm run dev:db           # 開発用データベース起動
+npm run dev:all          # 開発環境完全起動
+
+# 本番環境
+npm run prod:deploy      # 本番環境デプロイ
+npm run prod:up          # 本番環境サービス開始
+npm run prod:down        # 本番環境サービス停止
+npm run prod:build       # 本番環境イメージ再ビルド
+npm run prod:logs        # 本番環境ログ表示
+
+# HTTPS/SSL
+npm run prod:https       # HTTPS完全自動デプロイ
+npm run prod:ssl-setup   # SSL証明書手動取得
+npm run prod:ssl-renew   # SSL証明書手動更新
+
+# メンテナンス
+npm run maintenance      # メンテナンスメニュー表示
+npm run backup          # データベースバックアップ
+npm run cleanup         # 不要データ削除
+```
+
+### 🔧 Podmanコマンド
+
+```bash
+# コンテナ管理
+podman-compose -f podman-compose.production.yaml up -d     # サービス開始
+podman-compose -f podman-compose.production.yaml down      # サービス停止
+podman-compose -f podman-compose.production.yaml down -v   # サービス停止（ボリューム削除）
+podman-compose -f podman-compose.production.yaml restart   # サービス再起動
+
+# ログ確認
+podman-compose -f podman-compose.production.yaml logs -f          # 全ログ
+podman-compose -f podman-compose.production.yaml logs -f app      # アプリログ
+podman-compose -f podman-compose.production.yaml logs -f postgres # DBログ
+podman-compose -f podman-compose.production.yaml logs -f redis    # Redisログ
+podman-compose -f podman-compose.production.yaml logs -f nginx    # Nginxログ
+
+# 状態確認
+podman-compose -f podman-compose.production.yaml ps       # コンテナ状態
+podman ps -a                                              # 全コンテナ
+podman volume ls                                          # ボリューム一覧
+podman network ls                                         # ネットワーク一覧
+
+# システム情報
+podman stats                                              # リソース使用状況
+podman system df                                          # ディスク使用量
+```
+
+### 🛠️ メンテナンススクリプト
+
+```bash
+# 基本メンテナンス
+./maintenance.sh status        # 状態確認
+./maintenance.sh start         # サービス開始
+./maintenance.sh stop          # サービス停止
+./maintenance.sh restart       # サービス再起動
+./maintenance.sh logs          # ログ表示
+./maintenance.sh monitor       # リアルタイム監視
+
+# データ管理
+./maintenance.sh backup        # データベースバックアップ
+./maintenance.sh restore       # データベース復元
+./maintenance.sh cleanup       # 不要データ削除
+./maintenance.sh full-clean    # 完全クリーンアップ
+
+# アップデート
+./maintenance.sh update        # アプリケーション更新
+./maintenance.sh rebuild       # イメージ再ビルド
+
+# 緊急対応
+./emergency-cleanup.sh         # 緊急クリーンアップ（強制全削除）
+```
+
+### 🔐 SSL/HTTPS管理
+
+```bash
+# SSL証明書管理
+./ssl-setup.sh your-domain.com    # SSL証明書取得
+./ssl-renew.sh                    # SSL証明書更新
+sudo certbot certificates         # 証明書一覧確認
+sudo certbot renew --dry-run      # 更新テスト
+
+# DNS確認
+nslookup your-domain.com          # DNS解決確認
+dig your-domain.com               # DNS詳細確認
+```
+
+### 🔥 ファイアウォール管理
+
+```bash
+# ファイアウォール設定
+./firewall-manager.sh setup       # 基本設定
+./firewall-manager.sh status      # 状態確認
+./firewall-manager.sh list        # ルール一覧
+./firewall-manager.sh add-rule    # ルール追加
+
+# UFW直接コマンド
+sudo ufw enable                   # ファイアウォール有効化
+sudo ufw status numbered          # 状態確認
+sudo ufw allow 80/tcp             # HTTPポート開放
+sudo ufw allow 443/tcp            # HTTPSポート開放
+sudo ufw delete 1                 # ルール削除
+```
+
+### 🔍 トラブルシューティング
+
+```bash
+# システム確認
+curl http://localhost/health      # ヘルスチェック
+curl -I http://localhost          # HTTPレスポンス確認
+netstat -tlnp | grep :80          # ポート使用状況
+lsof -i :80                       # ポート80使用プロセス
+
+# ログ分析
+tail -f /var/log/nginx/access.log     # Nginxアクセスログ
+tail -f /var/log/nginx/error.log      # Nginxエラーログ
+journalctl -u podman               # Podmanサービスログ
+
+# リソース確認
+df -h                             # ディスク使用量
+free -h                           # メモリ使用量
+top                               # プロセス確認
+htop                              # プロセス確認（詳細）
+
+# プロセス管理
+ps aux | grep node                # Nodeプロセス確認
+ps aux | grep podman              # Podmanプロセス確認
+killall -9 node                   # 全Nodeプロセス強制終了
+```
+
+### 🔄 Git管理
+
+```bash
+# コード更新
+git pull origin main              # 最新コード取得
+git status                        # 変更状況確認
+git log --oneline -10             # コミット履歴確認
+
+# ブランチ管理
+git branch -a                     # 全ブランチ確認
+git checkout main                 # mainブランチに切り替え
+git reset --hard origin/main      # ローカル変更を破棄して最新に同期
+```
+
+### 📦 パッケージ管理
+
+```bash
+# npm関連
+npm install                       # 依存関係インストール
+npm update                        # パッケージ更新
+npm audit fix                     # セキュリティ脆弱性修正
+npm run build                     # プロダクションビルド
+
+# システムパッケージ
+sudo apt update                   # パッケージリスト更新
+sudo apt upgrade                  # システム更新
+sudo apt install curl git        # 必要パッケージインストール
+```
+
+### 💾 データベース管理
+
+```bash
+# PostgreSQL直接操作
+podman-compose -f podman-compose.production.yaml exec postgres psql -U lazychillroom_user -d lazychillroom_db
+
+# データベースバックアップ（手動）
+podman-compose -f podman-compose.production.yaml exec postgres pg_dump -U lazychillroom_user lazychillroom_db > backup.sql
+
+# データベース復元（手動）
+podman-compose -f podman-compose.production.yaml exec -T postgres psql -U lazychillroom_user -d lazychillroom_db < backup.sql
+
+# Redis操作
+podman-compose -f podman-compose.production.yaml exec redis redis-cli
+```
+
+### 🔧 設定が必要な項目（手動設定の場合）
+
+`.env.production`で以下を必ず変更してください：
+
+- `DB_PASSWORD`: 強力なデータベースパスワード
+- `REDIS_PASSWORD`: 強力なRedisパスワード
+- `JWT_SECRET`: 64文字以上のランダム文字列
+
+**自動生成の場合は設定不要です。**
+
+強力なパスワード生成例：
+```bash
+# 強力なパスワード生成
+openssl rand -base64 32
+
+# JWT_SECRET生成（64文字以上）
+openssl rand -base64 64
+```
+
+### 🚀 利用可能なデプロイオプション
+
+| 方法 | コマンド | パスワード | デプロイ | 設定編集 |
+|------|----------|-----------|---------|---------|
+| 完全自動 | `auto-deploy.sh` | 自動生成 | 自動実行 | 不要 |
+| セットアップのみ | `setup-production.sh --auto` | 自動生成 | 手動 | 可能 |
+| 手動セットアップ | `setup-production.sh` | 手動設定 | 手動 | 必要 |
+| 完全手動 | `git clone + 手動設定` | 手動設定 | 手動 | 必要 |
+
+## 🚀 本番環境へのデプロイ
+
+### 前提条件
+
+- Podman および podman-compose がインストールされていること
+- Git がインストールされていること
+- curl がインストールされていること（ヘルスチェック用）
+
+### 1. リポジトリのクローン
+
+```bash
+git clone https://github.com/suzunayui/lazychillroom.git
+cd lazychillroom
+```
+
+### 2. 本番環境設定の準備
+
+`.env.production` ファイルを編集し、本番環境用のセキュアな設定を行ってください：
+
+```bash
+cp .env.production .env.production.backup
+nano .env.production
+```
+
+**重要：以下の項目を必ず変更してください：**
+
+- `DB_PASSWORD`: 強力なデータベースパスワード
+- `REDIS_PASSWORD`: 強力なRedisパスワード  
+- `JWT_SECRET`: 長いランダムな文字列（最低64文字推奨）
+
+### 3. 本番環境デプロイの実行
+
+```bash
+# デプロイスクリプトを実行
+./deploy-production.sh
+
+# または npm スクリプトを使用
+npm run prod:deploy
+```
+
+### 4. デプロイ確認
+
+```bash
+# サービス状態確認
+./maintenance.sh status
+
+# ログ確認
+./maintenance.sh logs
+
+# ヘルスチェック
+curl http://localhost/health
+```
+
+## � SSL/HTTPS設定
+
+### SSL証明書の自動更新設定
+
+```bash
+# crontabに自動更新ジョブを追加
+sudo crontab -e
+
+# 毎日午前2時に証明書更新チェック
+0 2 * * * /home/username/lazychillroom/ssl-renew.sh
+```
+
+### SSL証明書の手動管理
+
+```bash
+# SSL証明書の手動取得
+./ssl-setup.sh your-domain.com
+
+# SSL証明書の手動更新
+./ssl-renew.sh
+
+# SSL証明書の状態確認
+sudo certbot certificates
+```
+
+### HTTPからHTTPSへの移行
+
+既存のHTTPデプロイメントをHTTPSに移行する場合：
+
+```bash
+# 1. ドメインのDNS設定確認
+nslookup your-domain.com
+
+# 2. SSL証明書取得
+./ssl-setup.sh your-domain.com
+
+# 3. 環境設定を更新
+nano .env.production
+# SSL_ENABLED=true
+# DOMAIN=your-domain.com
+
+# 4. Nginxサービス再起動
+podman-compose -f podman-compose.production.yaml restart nginx
+```
+
+## �🔧 本番環境の管理
+
+### 利用可能なコマンド
+
+```bash
+# サービス管理
+npm run prod:up      # サービス開始
+npm run prod:down    # サービス停止
+npm run prod:build   # イメージ再ビルド
+npm run prod:logs    # ログ表示
+
+# HTTPS/SSL管理
+npm run prod:https   # HTTPS完全自動デプロイ（要ドメイン指定）
+npm run prod:ssl-setup  # SSL証明書手動取得
+npm run prod:ssl-renew  # SSL証明書手動更新
+
+# メンテナンス
+./maintenance.sh status    # 状態確認
+./maintenance.sh monitor   # リアルタイム監視
+./maintenance.sh backup    # データベースバックアップ
+./maintenance.sh restart   # サービス再起動
+./maintenance.sh update    # アプリケーション更新
+./maintenance.sh cleanup   # 不要データ削除
+./maintenance.sh full-clean # 完全クリーンアップ（全削除）
+./emergency-cleanup.sh     # 緊急クリーンアップ（強制全削除）
+```
+
+### ログの確認
+
+```bash
+# 全サービスのログ
+podman-compose -f podman-compose.production.yaml logs -f
+
+# 特定サービスのログ
+podman-compose -f podman-compose.production.yaml logs -f app
+podman-compose -f podman-compose.production.yaml logs -f postgres
+podman-compose -f podman-compose.production.yaml logs -f redis
+podman-compose -f podman-compose.production.yaml logs -f nginx
+```
+
+## 🔒 セキュリティ設定
+
+### SSL/TLS証明書の設定（推奨）
+
+1. SSL証明書を取得（Let's Encrypt推奨）
+2. `nginx/ssl/` ディレクトリに証明書を配置
+3. `nginx/nginx.conf` のHTTPS設定部分のコメントを解除
+4. サービスを再起動
+
+```bash
+# Let's Encrypt証明書の例
+mkdir -p nginx/ssl
+# 証明書ファイルをnginx/ssl/に配置
+./maintenance.sh restart
+```
+
+### ファイアウォール設定
+
+```bash
+# 必要なポートのみ開放
+sudo ufw enable
+sudo ufw allow 22/tcp   # SSH
+sudo ufw allow 80/tcp   # HTTP
+sudo ufw allow 443/tcp  # HTTPS
+
+# 設定確認
+sudo ufw status numbered
+
+# ファイアウォール管理ツール使用
+./firewall-manager.sh status     # 状態確認
+./firewall-manager.sh setup      # 基本設定
+./firewall-manager.sh list       # ルール一覧
+```
+
+**開放されるポート:**
+- `22/tcp` - SSH接続
+- `80/tcp` - HTTP (LazyChillRoom)
+- `443/tcp` - HTTPS (LazyChillRoom SSL)
+
+**セキュリティ設定:**
+- デフォルト: 受信拒否、送信許可
+- 必要最小限のポートのみ開放
+- コメント付きルール管理
+
+## 📊 監視とメンテナンス
+
+### 定期バックアップの設定
+
+```bash
+# cronジョブでの自動バックアップ設定例
+# 毎日午前2時にバックアップ実行
+0 2 * * * cd /path/to/lazychillroom && ./maintenance.sh backup
+```
+
+### システム監視
+
+```bash
+# リアルタイム監視の開始
+./maintenance.sh monitor
+
+# システムリソース確認
+podman stats
+
+# ディスク使用量確認
+df -h
+```
+
+### パフォーマンス最適化
+
+- CPU使用率が高い場合：アプリケーションコンテナのCPU制限を調整
+- メモリ使用量が高い場合：Redis設定やPostgreSQL設定を調整
+- ディスク容量が不足する場合：ログローテーション設定や古いバックアップの削除
+
+## 🔄 アップデート手順
+
+```bash
+# 1. 最新コードを取得
+git pull origin main
+
+# 2. 安全なアップデート実行
+./maintenance.sh update
+
+# 3. 状態確認
+./maintenance.sh status
+```
+
+## 🆘 トラブルシューティング
+
+### よくある問題と解決方法
+
+#### サービスが起動しない
+
+```bash
+# ログを確認
+./maintenance.sh logs
+
+# サービス状態確認
+podman-compose -f podman-compose.production.yaml ps
+
+# コンテナの詳細確認
+podman inspect <container_name>
+```
+
+#### データベース接続エラー
+
+```bash
+# PostgreSQL接続確認
+podman-compose -f podman-compose.production.yaml exec postgres pg_isready -U lazychillroom_user
+
+# データベースログ確認
+podman-compose -f podman-compose.production.yaml logs postgres
+```
+
+#### Redis接続エラー
+
+```bash
+# Redis接続確認
+podman-compose -f podman-compose.production.yaml exec redis redis-cli ping
+
+# Redisログ確認
+podman-compose -f podman-compose.production.yaml logs redis
+```
+
+### 緊急時の復旧
+
+```bash
+# 1. 緊急クリーンアップ（全リソース強制削除）
+./emergency-cleanup.sh
+
+# 2. 新規デプロイ実行
+./deploy-production.sh
+
+# 3. データベース復元（バックアップがある場合）
+./maintenance.sh restore backup_file.sql
+
+# 4. サービス再起動
+./maintenance.sh start
+```
+
+**緊急クリーンアップの特徴：**
+- 全LazyChillRoomコンテナ・ボリューム・ネットワークを強制削除
+- ポート競合の解決
+- 孤立したリソースの完全クリーンアップ
+- システム全体のプルーン実行
+- 安全確認プロンプト付き
+
+## 📋 本番環境チェックリスト
+
+- [ ] `.env.production` の設定完了
+- [ ] 強力なパスワードの設定
+- [ ] SSL証明書の設定（推奨）
+- [ ] ファイアウォール設定
+- [ ] 定期バックアップの設定
+- [ ] 監視設定
+- [ ] ログローテーション設定
+- [ ] 緊急連絡先の準備
+
+## 🔗 関連リンク
+
+- [開発環境セットアップ](README.md)
+- [API ドキュメント](docs/api.md)
+- [トラブルシューティング](docs/troubleshooting.md)
