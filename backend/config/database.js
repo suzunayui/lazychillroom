@@ -6,13 +6,21 @@ const isTestEnv = process.env.NODE_ENV === 'test';
 const pgConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT) || 5432,
-  user: process.env.DB_USER || 'lazychillroom_user',
-  password: process.env.DB_PASSWORD || 'lazychillroom_password',
-  database: process.env.DB_NAME || 'lazychillroom',
+  user: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  database: process.env.DB_NAME || 'lazychill',
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
 };
+
+// デバッグ用：設定値をログ出力
+console.log('🔧 PostgreSQL Configuration:');
+console.log('Host:', pgConfig.host);
+console.log('Port:', pgConfig.port);
+console.log('User:', pgConfig.user);
+console.log('Database:', pgConfig.database);
+console.log('Password length:', pgConfig.password ? pgConfig.password.length : 0);
 
 // Redis設定
 const redisConfig = {
