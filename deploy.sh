@@ -58,11 +58,166 @@ if [ ! -f "$COMPOSE_FILE" ]; then
     exit 1
 fi
 
+# ポート80を強制的に空ける関数
+kill_port_80() {
+    print_info "ポート80を使用しているプロセスを確認中..."
+    
+    # ポート80を使用しているプロセスの確認
+    if sudo lsof -i :80 > /dev/null 2>&1; then
+        print_warning "ポート80を使用しているプロセスが見つかりました:"
+        sudo lsof -i :80
+        
+        print_info "これらのプロセスを停止しますか？ [y/N]"
+        read -r response
+        
+        if [[ "$response" =~ ^[Yy]$ ]]; then
+            # Podmanコンテナを優先的に停止
+            local containers=$(podman ps --filter "publish=80" -q)
+            if [ ! -z "$containers" ]; then
+                print_info "ポート80を使用しているPodmanコンテナを停止中..."
+                echo "$containers" | xargs -r podman stop
+                print_success "Podmanコンテナを停止しました"
+            fi
+            
+            # 他のプロセスも停止
+            local pids=$(sudo lsof -ti :80)
+            if [ ! -z "$pids" ]; then
+                print_info "その他のプロセスを停止中..."
+                echo "$pids" | xargs -r sudo kill -TERM
+                sleep 2
+                
+                # まだ残っている場合は強制終了
+                pids=$(sudo lsof -ti :80)
+                if [ ! -z "$pids" ]; then
+                    print_warning "強制終了中..."
+                    echo "$pids" | xargs -r sudo kill -9
+                fi
+                print_success "プロセスを停止しました"
+            fi
+        else
+            print_warning "ポート80のプロセス停止をスキップしました"
+            return 1
+        fi
+    else
+        print_success "ポート80は空いています"
+    fi
+}
+
+# SSL証明書確認関数
+check_ssl_certificate() {
+    local domain="$1"
+    if [ -f "nginx/ssl/fullchain.pem" ] && [ -f "nginx/ssl/privkey.pem" ]; then
+        print_success "SSL証明書が既に存在します"
+        return 0
+    else
+        print_warning "SSL証明書が見つかりません"
+        return 1
+    fi
+}
+
+# 手動証明書取得関数
+manual_ssl_setup() {
+    local domain="$1"
+    print_info "SSL証明書を手動で取得しますか？ [y/N]"
+    read -r response
+    
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        print_info "SSL証明書取得方法を選択してください:"
+        print_info "1) 自動取得（スタンドアロンモード - ポート80が必要）"
+        print_info "2) DNS認証（手動 - ポート80不要）"
+        print_info "3) スキップ"
+        read -r method
+        
+        case $method in
+            1)
+                print_info "スタンドアロンモードで証明書を取得します"
+                
+                # ポート80を空ける
+                if ! kill_port_80; then
+                    print_error "ポート80を空けることができませんでした"
+                    return 1
+                fi
+                
+                print_info "Certbotで証明書を取得中..."
+                podman run --rm -it \
+                    -v "$(pwd)/nginx/ssl:/etc/letsencrypt" \
+                    -p 80:80 \
+                    docker.io/certbot/certbot:latest \
+                    certonly --standalone --non-interactive --agree-tos \
+                    --email "admin@$domain" \
+                    -d "$domain" || {
+                    print_error "証明書取得に失敗しました"
+                    return 1
+                }
+                
+                # 証明書を適切な場所にコピー
+                if [ -d "nginx/ssl/live/$domain" ]; then
+                    cp "nginx/ssl/live/$domain/fullchain.pem" "nginx/ssl/"
+                    cp "nginx/ssl/live/$domain/privkey.pem" "nginx/ssl/"
+                    print_success "証明書を設定しました"
+                else
+                    print_error "証明書ファイルが見つかりません"
+                    return 1
+                fi
+                ;;
+            2)
+                print_info "DNS認証モードで証明書を取得します..."
+                print_warning "この方法では、DNSレコードの設定が必要です"
+                
+                podman run --rm -it \
+                    -v "$(pwd)/nginx/ssl:/etc/letsencrypt" \
+                    docker.io/certbot/certbot:latest \
+                    certonly --manual --preferred-challenges dns \
+                    --email "admin@$domain" \
+                    -d "$domain" || {
+                    print_error "証明書取得に失敗しました"
+                    return 1
+                }
+                
+                # 証明書を適切な場所にコピー
+                if [ -d "nginx/ssl/live/$domain" ]; then
+                    cp "nginx/ssl/live/$domain/fullchain.pem" "nginx/ssl/"
+                    cp "nginx/ssl/live/$domain/privkey.pem" "nginx/ssl/"
+                    print_success "証明書を設定しました"
+                else
+                    print_error "証明書ファイルが見つかりません"
+                    return 1
+                fi
+                ;;
+            3)
+                print_info "SSL証明書の取得をスキップします"
+                return 1
+                ;;
+            *)
+                print_error "無効な選択です"
+                return 1
+                ;;
+        esac
+    else
+        print_info "SSL証明書の取得をスキップします"
+        return 1
+    fi
+}
+
 # DOMAIN環境変数の設定確認
 print_info "デプロイメント設定を確認中..."
 if [ -n "$DOMAIN" ]; then
     print_success "HTTPS環境でデプロイします: $DOMAIN"
-    print_info "Let's Encrypt証明書が自動で取得されます"
+    
+    # SSL証明書の存在確認
+    if ! check_ssl_certificate "$DOMAIN"; then
+        print_info "SSL証明書が見つかりません"
+        print_info "証明書は以下の方法で取得できます:"
+        print_info "1) 自動取得（podman-compose起動時）"
+        print_info "2) 手動取得（今すぐ）"
+        
+        # 対話モードで手動取得を提案
+        if [ -t 0 ]; then  # 標準入力がターミナルの場合
+            manual_ssl_setup "$DOMAIN"
+        else
+            print_info "Let's Encrypt証明書が自動で取得されます"
+        fi
+    fi
 else
     print_warning "DOMAIN環境変数が未設定です"
     print_info "HTTP環境（localhost）でデプロイします"
