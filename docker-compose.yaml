@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: lazy-backend
+    expose:
+      - "3000"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=secret
+      - DB_NAME=lazychill
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16
+    container_name: lazy-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: lazychill
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: lazy-redis
+
+  caddy:
+    image: caddy:2
+    container_name: lazy-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend:/srv
+      - ./Caddyfile.${DOMAIN:-http}:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DOMAIN=${DOMAIN}
+    depends_on:
+      - backend
+
+volumes:
+  db-data:
+  caddy_data:
+  caddy_config:

@@ -1,19 +1,21 @@
+# Node.js 22 LTS (alpineベース)
 FROM node:22-alpine
 
-# 作業ディレクトリを設定
+# 作業ディレクトリ
 WORKDIR /app
 
-# package.jsonとpackage-lock.jsonをコピー
+# 依存関係インストール
 COPY package*.json ./
+RUN npm install
 
-# 依存関係をインストール
-RUN npm ci --only=production
-
-# アプリケーションのソースコードをコピー
+# ソースコードコピー
 COPY . .
 
-# アップロードディレクトリを作成
-RUN mkdir -p uploads/files uploads/avatars
+# 環境変数
+ENV NODE_ENV=production
 
-# ポート3000を公開
+# サーバーポート
 EXPOSE 3000
+
+# 起動コマンド
+CMD ["node", "server.js"]
