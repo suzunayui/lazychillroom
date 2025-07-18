@@ -17,7 +17,9 @@ sudo docker compose down -v
 
 sudo docker system df && sudo docker system prune
 
+sudo supervisorctl shutdown
 supervisord -c supervisord.conf
+supervisorctl status
 
 sudo docker compose up --build
 
