@@ -325,14 +325,14 @@ export NODE_ENV=production
 
 # package-lock.jsonがある場合はnpm ci、ない場合はnpm install
 if [ -f "package-lock.json" ]; then
-    echo "📋 package-lock.json検出: npm ciを使用"
-    npm ci --only=production 2>/dev/null || {
+    echo "📋 package-lock.json検出: npm ciを使用（本番環境+マイグレーション用）"
+    npm ci 2>/dev/null || {
         echo "⚠️  npm ci失敗、npm installにフォールバック"
-        npm install --only=production
+        npm install
     }
 else
-    echo "📋 package-lock.json未検出: npm installを使用"
-    npm install --only=production
+    echo "📋 package-lock.json未検出: npm installを使用（本番環境+マイグレーション用）"
+    npm install
 fi
 
 echo "✅ 本番環境用依存関係インストール完了"
