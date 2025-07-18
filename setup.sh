@@ -19,15 +19,15 @@ echo "🔐 Updating secrets in $ENV_FILE..."
 
 # SESSION_SECRET
 SESSION_SECRET=$(generate_secret)
-sed -i "s/^SESSION_SECRET=.*/SESSION_SECRET=${SESSION_SECRET}/" "$ENV_FILE"
+sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=${SESSION_SECRET}|" "$ENV_FILE"
 
 # JWT_SECRET
 JWT_SECRET=$(generate_secret)
-sed -i "s/^JWT_SECRET=.*/JWT_SECRET=${JWT_SECRET}/" "$ENV_FILE"
+sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${JWT_SECRET}|" "$ENV_FILE"
 
 # DB_PASSWORD
 DB_PASSWORD=$(generate_secret)
-sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=${DB_PASSWORD}/" "$ENV_FILE"
+sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${DB_PASSWORD}|" "$ENV_FILE"
 
 echo "✨ Secrets updated successfully!"
 echo "🚀 Setup completed!"
