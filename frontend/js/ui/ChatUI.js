@@ -620,15 +620,30 @@ class ChatUI {
 
     // 新しいリアルタイムメッセージの処理
     handleNewRealtimeMessage(message) {
+        console.log('🔄 ChatUI: リアルタイムメッセージ処理開始:', {
+            message,
+            currentChannel: this.currentChannel,
+            currentChannelId: this.currentChannel?.id,
+            messageChannelId: message.channel_id,
+            isMatch: this.currentChannel && message.channel_id == this.currentChannel.id
+        });
+        
         const chatMessages = document.getElementById('chatMessages');
-        if (!chatMessages) return;
+        if (!chatMessages) {
+            console.error('❌ chatMessagesエリアが見つかりません');
+            return;
+        }
 
         // 現在のチャネルのメッセージの場合のみ表示
         if (this.currentChannel && message.channel_id == this.currentChannel.id) {
+            console.log('✅ チャネルID一致 - メッセージを追加します');
+            
             // MessageManagerを使用してメッセージを追加
             if (window.messageManager) {
+                console.log('📝 MessageManagerでメッセージ追加');
                 window.messageManager.addMessage(message);
             } else {
+                console.log('📝 直接DOM操作でメッセージ追加');
                 // フォールバック: 直接DOM操作
                 const messageElement = this.createMessageElement(message);
                 chatMessages.appendChild(messageElement);
@@ -643,6 +658,8 @@ class ChatUI {
                     'message'
                 );
             }
+        } else {
+            console.log('❌ チャネルID不一致またはcurrentChannelが未設定 - メッセージを表示しません');
         }
     }
 

@@ -60,18 +60,31 @@ class RealtimeManager {
 
     // チャネルに参加（ポーリング開始の代替）
     joinChannel(channelId) {
-        if (this.currentChannelId === channelId) return;
+        console.log('🔗 RealtimeManager: チャネル参加要求:', {
+            requestedChannelId: channelId,
+            currentChannelId: this.currentChannelId,
+            isAlreadyJoined: this.currentChannelId === channelId
+        });
+        
+        if (this.currentChannelId === channelId) {
+            console.log('✅ 既に同じチャネルに参加済み');
+            return;
+        }
         
         // 前のチャネルから退出
         if (this.currentChannelId) {
+            console.log('🚪 前のチャネルから退出:', this.currentChannelId);
             this.leaveChannel(this.currentChannelId);
         }
 
         this.currentChannelId = channelId;
-        console.log(`チャンネル${channelId}に参加します`);
+        console.log(`🎯 チャネル${channelId}に参加します`);
         
         if (this.socketManager && this.socketManager.isConnected) {
+            console.log('📡 SocketManagerでチャネル参加');
             this.socketManager.joinChannel(channelId);
+        } else {
+            console.warn('⚠️ SocketManager接続なし - チャネル参加をスキップ');
         }
         
         this.emit('channelJoined', { channelId });
@@ -145,9 +158,19 @@ class RealtimeManager {
 
     // 新しいメッセージの処理
     handleNewMessage(message) {
+        console.log('📨 新しいメッセージ受信詳細:', {
+            message,
+            currentChannelId: this.currentChannelId,
+            messageChannelId: message.channel_id,
+            isMatch: message.channel_id == this.currentChannelId
+        });
+        
         // 現在のチャネルのメッセージのみ処理
         if (message.channel_id == this.currentChannelId) {
+            console.log('✅ チャネルIDが一致 - メッセージを表示します');
             this.emit('newMessage', message);
+        } else {
+            console.log('❌ チャネルIDが不一致 - メッセージを表示しません');
         }
     }
 

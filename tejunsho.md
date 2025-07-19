@@ -27,3 +27,7 @@ sleep 30  # コンテナ起動を待つ
 supervisorctl start docker-logs
 
 sudo docker compose logs backend
+
+
+curl -sSL https://get.docker.com/ | sh
+sudo usermod -aG docker $USER
