@@ -87,6 +87,10 @@ class AuthManager {
                 try {
                     localStorage.setItem('authToken', response.token);
                     localStorage.setItem('currentUser', JSON.stringify(response.user));
+                    if (response.sessionId) {
+                        localStorage.setItem('sessionId', response.sessionId);
+                        sessionStorage.setItem('sessionId', response.sessionId);
+                    }
                     sessionStorage.setItem('authToken', response.token);
                     sessionStorage.setItem('currentUser', JSON.stringify(response.user));
                 } catch (error) {
@@ -167,7 +171,7 @@ class AuthManager {
     }
 
     // ログアウト
-    logout() {
+    async logout() {
         // 重複実行防止
         if (this._isLoggingOut) {
             return;
@@ -175,6 +179,20 @@ class AuthManager {
         this._isLoggingOut = true;
         
         try {
+            // サーバー側でセッション削除
+            const sessionId = localStorage.getItem('sessionId') || sessionStorage.getItem('sessionId');
+            if (sessionId) {
+                try {
+                    await this.apiClient.request('/auth/logout', {
+                        method: 'POST',
+                        body: JSON.stringify({ sessionId })
+                    });
+                    console.log('✅ サーバー側セッション削除完了');
+                } catch (error) {
+                    console.warn('⚠️ サーバー側セッション削除に失敗:', error);
+                }
+            }
+            
             this.currentUser = null;
             this.isAuthenticated = false;
             
@@ -187,8 +205,10 @@ class AuthManager {
             localStorage.removeItem('authToken');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('currentUser');
+            localStorage.removeItem('sessionId');
             sessionStorage.removeItem('authToken');
             sessionStorage.removeItem('currentUser');
+            sessionStorage.removeItem('sessionId');
             
             console.log('✅ ログアウト処理完了。ページを再読み込みします...');
             

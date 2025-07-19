@@ -3,6 +3,9 @@ const bcrypt = require('bcryptjs');
 const Joi = require('joi');
 const { query, transaction } = require('../config/database');
 const { generateToken } = require('../middleware/auth');
+const SessionManager = require('../services/SessionManager');
+
+const sessionManager = new SessionManager();
 
 const router = express.Router();
 
@@ -235,6 +238,14 @@ router.post('/login', async (req, res) => {
     // Generate token
     const token = generateToken(user.id);
 
+    // Create session for additional security
+    const sessionData = {
+      userAgent: req.headers['user-agent'],
+      ip: req.ip || req.connection.remoteAddress,
+      loginTime: new Date().toISOString()
+    };
+    const sessionId = await sessionManager.createSession(user.id, sessionData);
+
     // Remove password hash from user data (ステータスはDBから取得したものを保持)
     delete user.password_hash;
 
@@ -242,6 +253,7 @@ router.post('/login', async (req, res) => {
       success: true,
       message: 'ログインしました',
       token,
+      sessionId, // セッションIDも返す
       user
     });
 
@@ -323,6 +335,30 @@ router.get('/verify', async (req, res) => {
     res.status(401).json({
       success: false,
       message: '無効なトークンです'
+    });
+  }
+});
+
+// Logout user
+router.post('/logout', async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    
+    if (sessionId) {
+      // セッションを削除
+      await sessionManager.deleteSession(sessionId);
+      console.log('🚪 Session deleted:', sessionId);
+    }
+    
+    res.json({
+      success: true,
+      message: 'ログアウトしました'
+    });
+  } catch (error) {
+    console.error('❌ Logout error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'ログアウト処理でエラーが発生しました'
     });
   }
 });
