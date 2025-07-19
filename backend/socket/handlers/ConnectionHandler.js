@@ -6,7 +6,8 @@ class ConnectionHandler {
     this.io = io;
     this.connectionCounts = new Map(); // IP別接続数追跡
     this.userSockets = new Map(); // ユーザーID -> Set<socketId>
-    this.maxConnectionsPerIP = 10;
+    // 開発環境では接続数制限を大幅に緩和（実質無制限）
+    this.maxConnectionsPerIP = process.env.NODE_ENV === 'production' ? 10 : 1000;
   }
 
   // 接続時の処理
@@ -15,7 +16,10 @@ class ConnectionHandler {
     
     // IP別接続数制限
     const currentConnections = this.connectionCounts.get(clientIP) || 0;
+    console.log(`Connection attempt from ${clientIP}: ${currentConnections}/${this.maxConnectionsPerIP} connections`);
+    
     if (currentConnections >= this.maxConnectionsPerIP) {
+      console.log(`❌ Connection limit exceeded for ${clientIP}: ${currentConnections}/${this.maxConnectionsPerIP}`);
       socket.emit('error', { message: '接続数が上限に達しています' });
       socket.disconnect(true);
       return;
@@ -24,7 +28,7 @@ class ConnectionHandler {
     // 接続数をカウント
     this.connectionCounts.set(clientIP, currentConnections + 1);
 
-    console.log(`New connection: ${socket.id} from ${clientIP}`);
+    console.log(`New connection: ${socket.id} from ${clientIP} (${currentConnections + 1}/${this.maxConnectionsPerIP})`);
 
     // 認証チェック
     const user = await this.authenticateSocket(socket);
@@ -71,6 +75,8 @@ class ConnectionHandler {
     
     // 接続数を減らす
     const currentConnections = this.connectionCounts.get(clientIP) || 0;
+    console.log(`Disconnection from ${clientIP}: ${currentConnections} -> ${Math.max(0, currentConnections - 1)}`);
+    
     if (currentConnections > 1) {
       this.connectionCounts.set(clientIP, currentConnections - 1);
     } else {
@@ -102,39 +108,70 @@ class ConnectionHandler {
   // ソケット認証
   async authenticateSocket(socket) {
     try {
+      // セッションIDまたはJWTトークンから認証
       const sessionId = socket.handshake.auth.sessionId;
-      if (!sessionId) {
+      const token = socket.handshake.auth.token;
+      
+      if (!sessionId && !token) {
+        console.log('Authentication failed: No sessionId or token provided');
         return null;
       }
 
-      // テスト環境ではグローバルセッションを確認
-      if (process.env.NODE_ENV === 'test' && global.testSessions) {
-        const session = global.testSessions.get(sessionId);
-        if (session && session.userId) {
-          return {
-            id: session.userId,
-            userid: session.userid,
-            nickname: session.userid,
-            avatar_url: null
-          };
+      // JWTトークンによる認証
+      if (token) {
+        try {
+          const jwt = require('jsonwebtoken');
+          const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          
+          if (decoded && decoded.userId) {
+            // データベースからユーザー情報を取得
+            const db = require('../../config/database');
+            const query = 'SELECT id, userid, nickname, avatar_url FROM users WHERE id = $1';
+            const result = await db.query(query, [decoded.userId]);
+            
+            if (result.length > 0) {
+              console.log(`JWT authentication successful for user: ${result[0].userid}`);
+              return result[0];
+            }
+          }
+        } catch (jwtError) {
+          console.error('JWT authentication failed:', jwtError.message);
         }
       }
 
-      // セッションからユーザー情報を取得
-      if (sessionManager) {
-        const session = await sessionManager.getSession(sessionId);
-        if (session && session.userId) {
-          // データベースからユーザー情報を取得
-          const db = require('../../config/database');
-          const query = 'SELECT id, userid, nickname, avatar_url FROM users WHERE id = $1';
-          const result = await db.query(query, [session.userId]);
-          
-          if (result.length > 0) {
-            return result[0];
+      // セッションによる認証（従来の方法）
+      if (sessionId) {
+        // テスト環境ではグローバルセッションを確認
+        if (process.env.NODE_ENV === 'test' && global.testSessions) {
+          const session = global.testSessions.get(sessionId);
+          if (session && session.userId) {
+            return {
+              id: session.userId,
+              userid: session.userid,
+              nickname: session.userid,
+              avatar_url: null
+            };
+          }
+        }
+
+        // セッションからユーザー情報を取得
+        if (sessionManager) {
+          const session = await sessionManager.getSession(sessionId);
+          if (session && session.userId) {
+            // データベースからユーザー情報を取得
+            const db = require('../../config/database');
+            const query = 'SELECT id, userid, nickname, avatar_url FROM users WHERE id = $1';
+            const result = await db.query(query, [session.userId]);
+            
+            if (result.length > 0) {
+              console.log(`Session authentication successful for user: ${result[0].userid}`);
+              return result[0];
+            }
           }
         }
       }
 
+      console.log('Authentication failed: Invalid sessionId or token');
       return null;
     } catch (error) {
       console.error('Socket authentication error:', error);
@@ -199,6 +236,13 @@ class ConnectionHandler {
       authenticatedUsers: this.userSockets.size,
       connectionsPerIP: Object.fromEntries(this.connectionCounts)
     };
+  }
+
+  // 接続数カウンターをリセット（デバッグ用）
+  resetConnectionCounts() {
+    console.log('🧹 Resetting connection counts...');
+    this.connectionCounts.clear();
+    console.log('✅ Connection counts reset');
   }
 }
 
