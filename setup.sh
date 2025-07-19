@@ -55,6 +55,12 @@ $DOMAIN {
     root * /srv
     file_server
     
+    # Socket.IO websocket connections
+    reverse_proxy /socket.io/* backend:3000 {
+        header_up Upgrade {http.request.header.Upgrade}
+        header_up Connection {http.request.header.Connection}
+    }
+    
     # API calls to backend
     reverse_proxy /api/* backend:3000
     

@@ -14,14 +14,18 @@ class SocketManager {
     // Socket.io接続を初期化
     async connect(token) {
         try {
-            console.log('Socket.io接続を開始...');
+            console.log('🔌 Socket.io接続を開始...');
+            console.log('🔌 トークン確認:', token ? 'あり' : 'なし');
+            console.log('🔌 接続先URL:', window.location.origin);
             
             // 既存の接続がある場合は切断
             if (this.socket) {
+                console.log('🔌 既存接続を切断中...');
                 this.disconnect();
             }
 
             // Socket.io接続を作成
+            console.log('🔌 Socket.IOクライアント作成中...');
             this.socket = io({
                 auth: {
                     token: token
