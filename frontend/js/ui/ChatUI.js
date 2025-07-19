@@ -6,6 +6,7 @@ class ChatUI {
         this.currentGuild = null;
         this.currentChannel = null;
         this.isDMMode = false;
+        this.isSending = false; // 連打防止フラグ
 
         // サブ管理クラスの初期化
         this.stateManager = new StateManager(this);
@@ -39,8 +40,16 @@ class ChatUI {
             
             // グローバルアクセス用
             window.chatUI = this;
+            this.messageManager = this.chatManager.messageManager; // インスタンス変数として設定
             window.messageManager = this.chatManager.messageManager; // MessageManagerをグローバルに設定
             window.presenceManager = this.presenceManager; // PresenceManagerをグローバルに設定
+            
+            // デバッグ: MessageManagerの初期化確認
+            console.log('🔍 MessageManager初期化確認:', {
+                chatManager: !!this.chatManager,
+                messageManager: !!this.messageManager,
+                scrollToBottom: !!(this.messageManager && this.messageManager.scrollToBottom)
+            });
             
             // UI要素のレンダリング
             this.render();
@@ -265,7 +274,16 @@ class ChatUI {
             
             // メッセージ表示後に確実に最下部へスクロール
             setTimeout(() => {
-                this.messageManager.scrollToBottom();
+                if (this.messageManager && typeof this.messageManager.scrollToBottom === 'function') {
+                    this.messageManager.scrollToBottom();
+                } else {
+                    console.warn('⚠️ MessageManager or scrollToBottom method not available');
+                    // フォールバック: 直接DOM操作でスクロール
+                    const messagesContainer = document.querySelector('.messages-container');
+                    if (messagesContainer) {
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                }
             }, 200);
         } catch (error) {
             console.error('メッセージ読み込みエラー:', error);
@@ -512,51 +530,67 @@ class ChatUI {
 
     // sendMessage メソッドを修正してファイルアップロードに対応
     async sendMessage() {
+        // 連打防止: 送信中なら早期リターン
+        if (this.isSending) {
+            console.log('🚫 送信中のため、重複送信をブロックしました');
+            return;
+        }
+        
         const messageInput = document.getElementById('messageInput');
         const message = messageInput.value.trim();
 
         if (!this.currentChannel) return;
 
-        // アップローダーチャンネルの場合
-        if (this.currentChannel.type === 'uploader_public' || this.currentChannel.type === 'uploader_private') {
-            // ファイルが選択されている場合はアップローダー用アップロード
-            if (this.fileUploadHandler.selectedFiles.length > 0) {
-                await this.fileUploadHandler.uploadUploaderFiles();
-                return;
-            }
-            
-            // テキストメッセージ（メモ）の場合は通常のメッセージ送信
-            if (message) {
-                const result = await this.chatManager.sendMessage(this.currentChannel.id, message);
+        // 送信フラグを立てる
+        this.isSending = true;
+        
+        try {
+            // アップローダーチャンネルの場合
+            if (this.currentChannel.type === 'uploader_public' || this.currentChannel.type === 'uploader_private') {
+                // ファイルが選択されている場合はアップローダー用アップロード
+                if (this.fileUploadHandler.selectedFiles.length > 0) {
+                    await this.fileUploadHandler.uploadUploaderFiles();
+                    return;
+                }
                 
-                if (result.success) {
-                    this.chatManager.addMessage(result.message);
-                    messageInput.value = '';
-                } else {
-                    this.uiUtils.showNotification('メッセージの送信に失敗しました: ' + result.error, 'error');
+                // テキストメッセージ（メモ）の場合は通常のメッセージ送信
+                if (message) {
+                    const result = await this.chatManager.sendMessage(this.currentChannel.id, message);
+                    
+                    if (result.success) {
+                        this.chatManager.addMessage(result.message);
+                        messageInput.value = '';
+                    } else {
+                        this.uiUtils.showNotification('メッセージの送信に失敗しました: ' + result.error, 'error');
+                    }
+                    return;
                 }
                 return;
             }
-            return;
-        }
 
-        // 通常のチャンネルの場合
-        // ファイルが選択されている場合はファイルアップロード
-        if (this.fileUploadHandler.selectedFiles.length > 0) {
-            await this.fileUploadHandler.uploadFiles();
-            return;
-        }
+            // 通常のチャンネルの場合
+            // ファイルが選択されている場合はファイルアップロード
+            if (this.fileUploadHandler.selectedFiles.length > 0) {
+                await this.fileUploadHandler.uploadFiles();
+                return;
+            }
 
-        // テキストメッセージのみの場合
-        if (!message) return;
+            // テキストメッセージのみの場合
+            if (!message) return;
 
-        const result = await this.chatManager.sendMessage(this.currentChannel.id, message);
-        
-        if (result.success) {
-            this.chatManager.addMessage(result.message);
-            messageInput.value = '';
-        } else {
-            this.uiUtils.showNotification('メッセージの送信に失敗しました: ' + result.error, 'error');
+            const result = await this.chatManager.sendMessage(this.currentChannel.id, message);
+            
+            if (result.success) {
+                this.chatManager.addMessage(result.message);
+                messageInput.value = '';
+            } else {
+                this.uiUtils.showNotification('メッセージの送信に失敗しました: ' + result.error, 'error');
+            }
+        } finally {
+            // 送信フラグをリセット（1秒後）
+            setTimeout(() => {
+                this.isSending = false;
+            }, 1000);
         }
     }
 

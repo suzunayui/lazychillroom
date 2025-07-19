@@ -3,6 +3,7 @@ class FileUploadHandler {
     constructor(chatUI) {
         this.chatUI = chatUI;
         this.selectedFiles = [];
+        this.isUploading = false; // アップロード中フラグ
     }
 
     bindFileUploadEvents() {
@@ -155,12 +156,21 @@ class FileUploadHandler {
     }
 
     async uploadFiles() {
+        // 連打防止: アップロード中なら早期リターン
+        if (this.isUploading) {
+            console.log('🚫 アップロード中のため、重複アップロードをブロックしました');
+            return false;
+        }
+        
         if (this.selectedFiles.length === 0 || !this.chatUI.currentChannel) {
             return false;
         }
 
         const messageInput = document.getElementById('messageInput');
         const content = messageInput ? messageInput.value.trim() : '';
+
+        // アップロード中フラグを立てる
+        this.isUploading = true;
 
         try {
             // 複数ファイルを順次アップロード
@@ -187,17 +197,31 @@ class FileUploadHandler {
             console.error('ファイルアップロードエラー:', error);
             this.chatUI.uiUtils.showNotification('ファイルのアップロードに失敗しました', 'error');
             return false;
+        } finally {
+            // アップロード中フラグをリセット（1秒後）
+            setTimeout(() => {
+                this.isUploading = false;
+            }, 1000);
         }
     }
 
     // アップローダー用ファイルアップロード
     async uploadUploaderFiles() {
+        // 連打防止: アップロード中なら早期リターン
+        if (this.isUploading) {
+            console.log('🚫 アップロード中のため、重複アップロードをブロックしました');
+            return false;
+        }
+        
         if (this.selectedFiles.length === 0 || !this.chatUI.currentChannel) {
             return false;
         }
 
         const messageInput = document.getElementById('messageInput');
         const content = messageInput ? messageInput.value.trim() : '';
+
+        // アップロード中フラグを立てる
+        this.isUploading = true;
 
         try {
             // 複数ファイルを順次アップロード
@@ -238,6 +262,11 @@ class FileUploadHandler {
             console.error('アップローダーファイルアップロードエラー:', error);
             this.chatUI.uiUtils.showNotification('ファイルのアップロードに失敗しました', 'error');
             return false;
+        } finally {
+            // アップロード中フラグをリセット（1秒後）
+            setTimeout(() => {
+                this.isUploading = false;
+            }, 1000);
         }
     }
 }
