@@ -47,7 +47,17 @@ const io = socketIo(server, {
 
 // パフォーマンスミドルウェアを適用（レート制限以外）
 app.use(performanceMiddleware.compression);
-app.use(performanceMiddleware.helmet);
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.socket.io"], 
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: [],
+    },
+  },
+  xssFilter: true,
+}));
 app.use(performanceMiddleware.monitoring);
 
 // CORS
