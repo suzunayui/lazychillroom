@@ -112,16 +112,23 @@ class ConnectionHandler {
       const sessionId = socket.handshake.auth.sessionId;
       const token = socket.handshake.auth.token;
       
+      console.log(`🔐 Socket authentication attempt - Socket ID: ${socket.id}`);
+      console.log(`🔐 Received sessionId: ${sessionId ? 'Yes' : 'No'}`);
+      console.log(`🔐 Received token: ${token ? 'Yes' : 'No'}`);
+      
       if (!sessionId && !token) {
-        console.log('Authentication failed: No sessionId or token provided');
+        console.log('❌ Authentication failed: No sessionId or token provided');
         return null;
       }
 
       // JWTトークンによる認証
       if (token) {
+        console.log(`🔑 Attempting JWT authentication...`);
         try {
           const jwt = require('jsonwebtoken');
           const decoded = jwt.verify(token, process.env.JWT_SECRET);
+          
+          console.log(`🔑 JWT decoded successfully:`, decoded);
           
           if (decoded && decoded.userId) {
             // データベースからユーザー情報を取得
@@ -130,12 +137,14 @@ class ConnectionHandler {
             const result = await db.query(query, [decoded.userId]);
             
             if (result.length > 0) {
-              console.log(`JWT authentication successful for user: ${result[0].userid}`);
+              console.log(`✅ JWT authentication successful for user: ${result[0].userid} (ID: ${result[0].id})`);
               return result[0];
+            } else {
+              console.log(`❌ User not found in database: ${decoded.userId}`);
             }
           }
         } catch (jwtError) {
-          console.error('JWT authentication failed:', jwtError.message);
+          console.error('❌ JWT authentication failed:', jwtError.message);
         }
       }
 
@@ -171,10 +180,10 @@ class ConnectionHandler {
         }
       }
 
-      console.log('Authentication failed: Invalid sessionId or token');
+      console.log('❌ Authentication failed: Invalid sessionId or token');
       return null;
     } catch (error) {
-      console.error('Socket authentication error:', error);
+      console.error('❌ Socket authentication error:', error);
       return null;
     }
   }
