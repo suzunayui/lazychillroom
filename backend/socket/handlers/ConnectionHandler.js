@@ -14,21 +14,26 @@ class ConnectionHandler {
   async handleConnection(socket) {
     const clientIP = socket.handshake.address;
     
-    // IP別接続数制限
-    const currentConnections = this.connectionCounts.get(clientIP) || 0;
-    console.log(`Connection attempt from ${clientIP}: ${currentConnections}/${this.maxConnectionsPerIP} connections`);
-    
-    if (currentConnections >= this.maxConnectionsPerIP) {
-      console.log(`❌ Connection limit exceeded for ${clientIP}: ${currentConnections}/${this.maxConnectionsPerIP}`);
-      socket.emit('error', { message: '接続数が上限に達しています' });
-      socket.disconnect(true);
-      return;
+    // 開発環境では接続数制限を完全に無効化
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`⚡ Development mode: Connection limit disabled for ${clientIP}`);
+    } else {
+      // IP別接続数制限（本番環境のみ）
+      const currentConnections = this.connectionCounts.get(clientIP) || 0;
+      console.log(`Connection attempt from ${clientIP}: ${currentConnections}/${this.maxConnectionsPerIP} connections`);
+      
+      if (currentConnections >= this.maxConnectionsPerIP) {
+        console.log(`❌ Connection limit exceeded for ${clientIP}: ${currentConnections}/${this.maxConnectionsPerIP}`);
+        socket.emit('error', { message: '接続数が上限に達しています' });
+        socket.disconnect(true);
+        return;
+      }
+
+      // 接続数をカウント
+      this.connectionCounts.set(clientIP, currentConnections + 1);
     }
 
-    // 接続数をカウント
-    this.connectionCounts.set(clientIP, currentConnections + 1);
-
-    console.log(`New connection: ${socket.id} from ${clientIP} (${currentConnections + 1}/${this.maxConnectionsPerIP})`);
+    console.log(`New connection: ${socket.id} from ${clientIP}`);
 
     // 認証チェック
     const user = await this.authenticateSocket(socket);
@@ -73,14 +78,17 @@ class ConnectionHandler {
   async handleDisconnection(socket) {
     const clientIP = socket.handshake.address;
     
-    // 接続数を減らす
-    const currentConnections = this.connectionCounts.get(clientIP) || 0;
-    console.log(`Disconnection from ${clientIP}: ${currentConnections} -> ${Math.max(0, currentConnections - 1)}`);
-    
-    if (currentConnections > 1) {
-      this.connectionCounts.set(clientIP, currentConnections - 1);
-    } else {
-      this.connectionCounts.delete(clientIP);
+    // 本番環境のみで接続数を管理
+    if (process.env.NODE_ENV === 'production') {
+      // 接続数を減らす
+      const currentConnections = this.connectionCounts.get(clientIP) || 0;
+      console.log(`Disconnection from ${clientIP}: ${currentConnections} -> ${Math.max(0, currentConnections - 1)}`);
+      
+      if (currentConnections > 1) {
+        this.connectionCounts.set(clientIP, currentConnections - 1);
+      } else {
+        this.connectionCounts.delete(clientIP);
+      }
     }
 
     if (socket.user) {
