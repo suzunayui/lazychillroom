@@ -22,7 +22,12 @@ class SocketManager {
             if (this.socket) {
                 console.log('🔌 既存接続を切断中...');
                 this.disconnect();
+                // 切断完了を待つ
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
+
+            // 再接続カウンターをリセット
+            this.reconnectAttempts = 0;
 
             // Socket.io接続を作成
             console.log('🔌 Socket.IOクライアント作成中...');
@@ -82,7 +87,7 @@ class SocketManager {
             // 切断をアプリに通知
             this.emit('socket_disconnected', reason);
             
-            // 自動再接続（サーバー側の問題の場合）
+            // 自動再接続（サーバー側の問題の場合のみ）
             if (reason === 'io server disconnect') {
                 this.attemptReconnect();
             }
@@ -91,11 +96,25 @@ class SocketManager {
         this.socket.on('connect_error', (error) => {
             console.error('Socket.io接続エラー:', error);
             this.isConnected = false;
+            
+            // 接続数制限エラーの場合は再接続を停止
+            if (error.message && error.message.includes('接続数が上限')) {
+                console.warn('接続数制限のため再接続を停止します');
+                return;
+            }
+            
             this.attemptReconnect();
         });
 
         this.socket.on('error', (error) => {
             console.error('Socket.ioエラー:', error);
+            
+            // 接続数制限エラーの場合は再接続を停止
+            if (error.message === '接続数が上限に達しています') {
+                console.warn('接続数制限エラー - 再接続を停止します');
+                this.reconnectAttempts = this.maxReconnectAttempts; // 再接続を停止
+                return;
+            }
         });
 
         // 認証エラー
@@ -316,6 +335,8 @@ class SocketManager {
             this.socket.disconnect();
             this.socket = null;
             this.isConnected = false;
+            // 再接続を停止
+            this.reconnectAttempts = this.maxReconnectAttempts;
         }
     }
 
