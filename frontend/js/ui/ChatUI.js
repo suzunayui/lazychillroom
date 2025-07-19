@@ -262,6 +262,11 @@ class ChatUI {
             this.chatManager.currentChannel = this.currentChannel;
             const messages = await this.chatManager.loadMessages(channelId);
             this.chatManager.renderMessages(messages);
+            
+            // メッセージ表示後に確実に最下部へスクロール
+            setTimeout(() => {
+                this.messageManager.scrollToBottom();
+            }, 200);
         } catch (error) {
             console.error('メッセージ読み込みエラー:', error);
         }

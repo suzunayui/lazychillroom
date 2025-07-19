@@ -450,7 +450,13 @@ class MessageManager {
     scrollToBottom() {
         const messagesContainer = document.getElementById('chatMessages');
         if (messagesContainer) {
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            // DOMの描画完了を待ってからスクロール
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    console.log('📜 Scrolled to bottom:', messagesContainer.scrollTop, '/', messagesContainer.scrollHeight);
+                }, 50);
+            });
         }
     }
 
