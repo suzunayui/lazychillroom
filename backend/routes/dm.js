@@ -171,7 +171,7 @@ router.post('/', async (req, res) => {
       );
 
       console.log('📝 Channel creation result:', channelResult);
-      const newChannelId = channelResult[0].id;
+      const newChannelId = channelResult.rows[0].id;
       console.log('🆔 New channel ID:', newChannelId);
 
       // Add both users as participants
