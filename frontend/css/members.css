@@ -79,10 +79,23 @@
     cursor: pointer;
     transition: background-color 0.15s ease;
     position: relative;
+    user-select: none;
 }
 
 .member-item:hover {
     background-color: #34373c;
+}
+
+.member-item:active {
+    background-color: #2c2f33;
+}
+
+.member-item.selected {
+    background-color: #404eed;
+}
+
+.member-item.selected:hover {
+    background-color: #4752f1;
 }
 
 .member-avatar {

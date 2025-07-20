@@ -485,7 +485,15 @@ class ServerManager {
         }
         
         const dmChannels = await this.chatUI.chatManager.loadChannels();
-        channelsList.innerHTML = UIComponents.createDMUserListHTML(dmChannels);
+        
+        // DMManagerのgenerateDMListHTMLを使用してフレンドボタンを含める
+        if (this.chatUI.dmManager) {
+            this.chatUI.dmManager.dmChannels = dmChannels;
+            channelsList.innerHTML = this.chatUI.dmManager.generateDMListHTML();
+        } else {
+            // フォールバック: UIComponentsを使用
+            channelsList.innerHTML = UIComponents.createDMUserListHTML(dmChannels);
+        }
     }
 
     // チャンネルリスト表示

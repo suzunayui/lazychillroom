@@ -54,6 +54,15 @@ class EventHandler {
             if (serverItem) {
                 e.preventDefault();
                 this.showServerContextMenu(e, serverItem);
+                return;
+            }
+            
+            // メンバー右クリックメニュー
+            const memberItem = e.target.closest('.member-item');
+            if (memberItem) {
+                e.preventDefault();
+                this.showMemberContextMenu(e, memberItem);
+                return;
             }
         });
 
@@ -665,6 +674,168 @@ class EventHandler {
         } catch (error) {
             console.error('フレンド画面表示エラー:', error);
         }
+    }
+
+    // メンバー右クリックコンテキストメニューを表示
+    showMemberContextMenu(event, memberItem) {
+        const userId = memberItem.dataset.userId;
+        const username = memberItem.dataset.username;
+        
+        // 自分自身の場合は何も表示しない
+        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        if (parseInt(userId) === currentUser.id) {
+            return;
+        }
+
+        // 既存のコンテキストメニューを削除
+        this.hideContextMenus();
+
+        const contextMenu = document.createElement('div');
+        contextMenu.className = 'context-menu member-context-menu';
+        contextMenu.innerHTML = `
+            <div class="context-menu-item" data-action="profile">
+                <span class="context-menu-icon">👤</span>
+                <span class="context-menu-text">プロフィールを表示</span>
+            </div>
+            <div class="context-menu-item" data-action="dm">
+                <span class="context-menu-icon">💬</span>
+                <span class="context-menu-text">DMを送信</span>
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item" data-action="add-friend">
+                <span class="context-menu-icon">👥</span>
+                <span class="context-menu-text">フレンド申請を送信</span>
+            </div>
+        `;
+
+        document.body.appendChild(contextMenu);
+
+        // イベントリスナーを追加
+        contextMenu.addEventListener('click', async (e) => {
+            const action = e.target.closest('.context-menu-item')?.dataset.action;
+            this.hideContextMenus();
+
+            switch (action) {
+                case 'profile':
+                    await this.showMemberProfile(userId, username);
+                    break;
+                case 'dm':
+                    await this.startDMWithMember(userId, username);
+                    break;
+                case 'add-friend':
+                    await this.sendFriendRequest(username);
+                    break;
+            }
+        });
+
+        // 位置を調整
+        this.positionContextMenu(contextMenu, event);
+    }
+
+    // メンバープロフィールを表示
+    async showMemberProfile(userId, username) {
+        // 簡単なプロフィール表示（モーダル）
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content member-profile-modal">
+                <div class="modal-header">
+                    <h3>メンバープロフィール</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="profile-info">
+                        <div class="profile-avatar">
+                            <div class="avatar-placeholder">${username.charAt(0).toUpperCase()}</div>
+                        </div>
+                        <div class="profile-details">
+                            <h4>${username}</h4>
+                            <p>ユーザーID: ${userId}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-action="close">閉じる</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // イベントハンドラー
+        modal.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-close') || 
+                e.target.dataset.action === 'close' || 
+                e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // メンバーとDMを開始
+    async startDMWithMember(userId, username) {
+        try {
+            if (!this.chatUI.dmManager) {
+                console.error('DMManagerが初期化されていません');
+                return;
+            }
+
+            // DMチャンネルを作成または取得
+            const dmChannel = await this.chatUI.dmManager.createOrGetDMChannel(parseInt(userId));
+            if (dmChannel) {
+                // DMチャンネルに切り替える
+                if (this.chatUI.channelManager) {
+                    await this.chatUI.channelManager.switchToChannel(dmChannel.id, 'dm');
+                }
+                console.log(`✅ ${username}とのDMを開始しました`);
+            }
+        } catch (error) {
+            console.error('DM開始エラー:', error);
+            this.chatUI.uiUtils.showNotification('DMの開始に失敗しました', 'error');
+        }
+    }
+
+    // フレンド申請を送信
+    async sendFriendRequest(username) {
+        try {
+            if (!this.chatUI.friendsManager) {
+                console.error('FriendsManagerが初期化されていません');
+                return;
+            }
+
+            const response = await this.chatUI.friendsManager.sendFriendRequest(username);
+            if (response.success) {
+                this.chatUI.uiUtils.showNotification(`${username}にフレンド申請を送信しました`, 'success');
+            } else {
+                this.chatUI.uiUtils.showNotification(response.message || 'フレンド申請の送信に失敗しました', 'error');
+            }
+        } catch (error) {
+            console.error('フレンド申請エラー:', error);
+            this.chatUI.uiUtils.showNotification('フレンド申請の送信に失敗しました', 'error');
+        }
+    }
+
+    // コンテキストメニューの位置調整
+    positionContextMenu(menu, event) {
+        const rect = menu.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let x = event.clientX;
+        let y = event.clientY;
+
+        // 右端にはみ出る場合は左に表示
+        if (x + rect.width > viewportWidth) {
+            x = viewportWidth - rect.width - 10;
+        }
+
+        // 下端にはみ出る場合は上に表示
+        if (y + rect.height > viewportHeight) {
+            y = viewportHeight - rect.height - 10;
+        }
+
+        menu.style.left = `${x}px`;
+        menu.style.top = `${y}px`;
     }
 }
 
