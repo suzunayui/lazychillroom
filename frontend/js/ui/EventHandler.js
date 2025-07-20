@@ -678,22 +678,22 @@ class EventHandler {
     // フレンドリストを直接表示（中間画面をスキップ）
     async showFriendsListDirectly() {
         try {
+            console.log('🎯 フレンドボタンクリック - フレンドリスト直接表示開始');
+            
             // フレンドUIが初期化されていない場合は初期化
             if (!this.chatUI.friendsUI) {
                 console.warn('FriendsUIが初期化されていません');
                 return;
             }
 
-            // フレンドマネージャーとDMマネージャーを設定
-            if (this.chatUI.friendsManager && this.chatUI.dmManager) {
-                this.chatUI.friendsUI.setManagers(this.chatUI.friendsManager, this.chatUI.dmManager);
-            }
-
-            // 直接フレンドリストを表示
-            await this.chatUI.friendsUI.showFriendsListTab();
+            // 現在の状態をクリア
+            this.chatUI.currentChannel = null;
+            this.chatUI.currentGuild = null;
+            this.chatUI.isDMMode = true; // DMモードに設定
+            
+            console.log('🔄 状態クリア完了 - currentChannel:', this.chatUI.currentChannel, 'currentGuild:', this.chatUI.currentGuild);
             
             // サイドバーの状態更新
-            this.chatUI.isDMMode = false;
             document.querySelectorAll('.server-item, .dm-user-item').forEach(item => {
                 item.classList.remove('active');
             });
@@ -701,6 +701,18 @@ class EventHandler {
             
             // メンバーリストを非表示
             this.chatUI.uiUtils.hideMembersList();
+            
+            // フレンドマネージャーとDMマネージャーを設定
+            if (this.chatUI.friendsManager && this.chatUI.dmManager) {
+                this.chatUI.friendsUI.setManagers(this.chatUI.friendsManager, this.chatUI.dmManager);
+            }
+
+            console.log('🎭 フレンドリストタブ表示開始');
+            // 直接フレンドリストを表示
+            await this.chatUI.friendsUI.showFriendsListTab();
+            
+            console.log('✅ フレンドリスト表示完了');
+
         } catch (error) {
             console.error('フレンドリスト表示エラー:', error);
             this.chatUI.uiUtils.showNotification('フレンドリストの表示に失敗しました', 'error');
