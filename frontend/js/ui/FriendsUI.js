@@ -316,7 +316,14 @@ class FriendsUI {
     // コンテンツを更新
     updateFriendsContent() {
         const contentArea = document.getElementById('friendsContent');
-        if (!contentArea) return;
+        if (!contentArea) {
+            console.error('❌ friendsContent要素が見つかりません');
+            return;
+        }
+
+        console.log('🔄 フレンドコンテンツ更新中... currentView:', this.currentView);
+        console.log('🔍 FriendsManager状態:', this.friendsManager);
+        console.log('🔍 Friend requests:', this.friendsManager?.friendRequests);
 
         let html = '';
         switch (this.currentView) {
@@ -327,10 +334,12 @@ class FriendsUI {
                 html = this.renderDMList();
                 break;
             case 'requests':
+                console.log('📋 申請リストをレンダリング中...');
                 html = this.renderRequestsList();
                 break;
         }
 
+        console.log('📝 生成されたHTML:', html.substring(0, 200) + '...');
         contentArea.innerHTML = html;
         this.updateRequestBadge();
     }
@@ -347,10 +356,14 @@ class FriendsUI {
 
     // イベントをバインド
     bindFriendsEvents() {
+        console.log('🔗 フレンドイベントをバインド中...');
+        
         // ナビゲーションボタン
         document.querySelectorAll('.nav-btn').forEach(btn => {
+            console.log('🎯 ナビゲーションボタン見つかりました:', btn.dataset.view);
             btn.addEventListener('click', (e) => {
                 const view = e.currentTarget.dataset.view;
+                console.log('👆 ナビゲーションボタンクリック:', view);
                 this.switchView(view);
             });
         });
@@ -381,6 +394,8 @@ class FriendsUI {
                 this.handleContentClick(e);
             });
         }
+        
+        console.log('✅ フレンドイベントバインド完了');
     }
 
     // コンテンツクリックハンドラ
@@ -423,6 +438,7 @@ class FriendsUI {
 
     // ビュー切り替え
     switchView(view) {
+        console.log('🔄 ビュー切り替え:', this.currentView, '->', view);
         this.currentView = view;
         
         // ナビゲーションボタンの状態更新
@@ -439,6 +455,7 @@ class FriendsUI {
 
         // コンテンツ更新
         this.updateFriendsContent();
+        console.log('✅ ビュー切り替え完了:', view);
     }
 
     // フレンド追加モーダル
