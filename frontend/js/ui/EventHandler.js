@@ -693,6 +693,10 @@ class EventHandler {
             
             console.log('🔄 状態クリア完了 - currentChannel:', this.chatUI.currentChannel, 'currentGuild:', this.chatUI.currentGuild);
             
+            // 左サイドバーをDMモードに変更（テキストチャンネルリストをDMリストに置き換え）
+            console.log('📋 左サイドバーをDMモードに更新中...');
+            await this.chatUI.serverManager.showDMUserList();
+            
             // サイドバーの状態更新
             document.querySelectorAll('.server-item, .dm-user-item').forEach(item => {
                 item.classList.remove('active');
