@@ -99,9 +99,14 @@ router.get('/', async (req, res) => {
 // Create or get existing DM channel with a user
 router.post('/', async (req, res) => {
   try {
+    console.log('📬 DM creation request received');
+    console.log('Request body:', req.body);
+    console.log('Request user:', req.user?.id);
+    
     // Validate input
     const { error, value } = createDMSchema.validate(req.body);
     if (error) {
+      console.log('❌ Validation error:', error.details[0].message);
       return res.status(400).json({
         success: false,
         message: error.details[0].message
