@@ -189,9 +189,9 @@ class DMManager {
         
         // フレンド追加ボタン
         html += `
-            <div class="dm-user-item add-friend" id="addFriendBtn">
-                <div class="dm-avatar plus">+</div>
-                <span class="dm-name">フレンドを追加</span>
+            <div class="dm-user-item add-friend" id="addFriendBtn" title="フレンド管理画面を開く">
+                <div class="dm-avatar plus">👥</div>
+                <span class="dm-name">フレンド</span>
             </div>
         `;
         

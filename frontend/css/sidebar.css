@@ -431,11 +431,14 @@
 .dm-user-item.add-friend {
     border: 1px dashed #4f545c;
     margin-top: 4px;
+    transition: all 0.2s ease;
 }
 
 .dm-user-item.add-friend:hover {
-    border-color: #72767d;
-    background-color: #40444b;
+    border-color: #7289da;
+    background-color: rgba(114, 137, 218, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(114, 137, 218, 0.2);
 }
 
 .dm-user-item .dm-avatar {
@@ -454,10 +457,17 @@
 }
 
 .dm-user-item .dm-avatar.plus {
-    background: transparent;
-    border: 1px solid #4f545c;
-    color: #8e9297;
-    font-size: 16px;
+    background: linear-gradient(135deg, #7289da, #5865f2);
+    border: 1px solid #7289da;
+    color: #ffffff;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.dm-user-item.add-friend:hover .dm-avatar.plus {
+    background: linear-gradient(135deg, #8fa1e3, #6b7bb8);
+    border-color: #8fa1e3;
+    transform: scale(1.1);
 }
 
 .dm-user-item .dm-name {

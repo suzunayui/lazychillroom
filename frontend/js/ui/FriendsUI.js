@@ -29,8 +29,10 @@ class FriendsUI {
             // メイン画面を作成
             const html = this.createFriendsMainHTML();
             
-            // メインコンテンツエリアに表示
-            const mainContent = document.getElementById('mainContent') || document.getElementById('channelContent');
+            // メインコンテンツエリアに表示 - 実際のメイン表示エリアはchatMessages
+            const mainContent = document.getElementById('chatMessages') || 
+                              document.getElementById('mainContent') || 
+                              document.getElementById('channelContent');
             if (mainContent) {
                 mainContent.innerHTML = html;
                 this.bindFriendsEvents();

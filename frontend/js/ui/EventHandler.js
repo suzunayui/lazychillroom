@@ -71,6 +71,13 @@ class EventHandler {
             }
         });
 
+        // フレンド追加ボタン
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#addFriendBtn') || e.target.closest('.add-friend')) {
+                this.showFriendsView();
+            }
+        });
+
         // メッセージ送信
         const chatForm = document.getElementById('chatForm');
         if (chatForm) {
@@ -625,6 +632,39 @@ class EventHandler {
             startX = null;
             startY = null;
         });
+    }
+
+    // フレンド画面を表示
+    async showFriendsView() {
+        try {
+            // フレンドUIが初期化されていない場合は初期化
+            if (!this.chatUI.friendsUI) {
+                console.warn('FriendsUIが初期化されていません');
+                return;
+            }
+
+            // フレンドマネージャーとDMマネージャーを設定
+            if (this.chatUI.friendsManager && this.chatUI.dmManager) {
+                this.chatUI.friendsUI.setManagers(this.chatUI.friendsManager, this.chatUI.dmManager);
+            }
+
+            // フレンド画面を表示
+            await this.chatUI.friendsUI.showFriendsView();
+            
+            // サイドバーの状態更新
+            this.chatUI.isDMMode = false;
+            document.querySelectorAll('.server-item, .dm-user-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById('dmButton')?.classList.remove('active');
+            
+            // メンバーリストを非表示
+            this.chatUI.uiUtils.hideMembersList();
+            
+            console.log('✅ フレンド画面を表示しました');
+        } catch (error) {
+            console.error('フレンド画面表示エラー:', error);
+        }
     }
 }
 

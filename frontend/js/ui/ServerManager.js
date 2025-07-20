@@ -27,6 +27,12 @@ class ServerManager {
             const sectionTitle = document.getElementById('sectionTitle');
             sectionTitle.textContent = 'テキストチャンネル';
             
+            // サーバーモードではチャンネル作成ボタンを表示する
+            const addChannelBtn = document.getElementById('addChannelBtn');
+            if (addChannelBtn) {
+                addChannelBtn.style.display = 'flex';
+            }
+            
             // メンバーリストを最初に更新（最重要）
             console.log('👥 メンバーリスト更新:', guild.members?.length || 0, 'メンバー');
             console.log('👥 メンバーリスト詳細:', guild.members);
@@ -102,6 +108,12 @@ class ServerManager {
         // セクションタイトルを更新
         const sectionTitle = document.getElementById('sectionTitle');
         sectionTitle.textContent = 'マイサーバー';
+        
+        // マイサーバーモードではチャンネル作成ボタンを表示する
+        const addChannelBtn = document.getElementById('addChannelBtn');
+        if (addChannelBtn) {
+            addChannelBtn.style.display = 'flex';
+        }
         
         // 最初のチャンネルを選択（アップローダーチャンネル優先）
         if (myServer.channels && myServer.channels.length > 0) {
@@ -463,8 +475,14 @@ class ServerManager {
     async showDMUserList() {
         const sectionTitle = document.getElementById('sectionTitle');
         const channelsList = document.getElementById('channelsList');
+        const addChannelBtn = document.getElementById('addChannelBtn');
         
         sectionTitle.textContent = 'ダイレクトメッセージ';
+        
+        // DMモードではチャンネル作成ボタンを非表示にする
+        if (addChannelBtn) {
+            addChannelBtn.style.display = 'none';
+        }
         
         const dmChannels = await this.chatUI.chatManager.loadChannels();
         channelsList.innerHTML = UIComponents.createDMUserListHTML(dmChannels);
@@ -473,7 +491,14 @@ class ServerManager {
     // チャンネルリスト表示
     async showChannelList() {
         const sectionTitle = document.getElementById('sectionTitle');
+        const addChannelBtn = document.getElementById('addChannelBtn');
+        
         sectionTitle.textContent = 'テキストチャンネル';
+        
+        // 通常のチャンネルモードではチャンネル作成ボタンを表示する
+        if (addChannelBtn) {
+            addChannelBtn.style.display = 'flex';
+        }
         
         if (this.chatUI.currentGuild) {
             await this.chatUI.loadAndRenderChannels(this.chatUI.currentGuild.id);
