@@ -405,6 +405,9 @@ class FriendsUI {
         const target = e.target.closest('button');
         if (!target) return;
 
+        console.log('🖱️ Button clicked:', target.classList.toString());
+        console.log('📊 Button data:', target.dataset);
+
         const friendId = target.dataset.friendId;
         const dmId = target.dataset.dmId;
         const requestId = target.dataset.requestId;
@@ -412,8 +415,18 @@ class FriendsUI {
 
         try {
             if (target.classList.contains('dm-btn') && friendId) {
+                console.log('📬 DM button clicked for friend ID:', friendId, 'type:', typeof friendId);
+                // friendIdを数値に変換
+                const numericFriendId = parseInt(friendId, 10);
+                console.log('🔢 Converted to numeric ID:', numericFriendId, 'type:', typeof numericFriendId);
+                
+                if (isNaN(numericFriendId)) {
+                    console.error('❌ Invalid friend ID:', friendId);
+                    return;
+                }
+                
                 // DMを開始
-                await this.startDMWithFriend(friendId);
+                await this.startDMWithFriend(numericFriendId);
             } else if (target.classList.contains('remove-btn') && friendId) {
                 // フレンド削除
                 await this.removeFriend(friendId);
@@ -482,10 +495,24 @@ class FriendsUI {
 
     // フレンドとDM開始
     async startDMWithFriend(friendId) {
-        const dmChannel = await this.dmManager.createOrGetDMChannel(parseInt(friendId));
+        console.log('🎯 Starting DM with friend ID:', friendId, 'type:', typeof friendId);
+        
+        // friendIdが既に数値の場合はそのまま、文字列の場合は変換
+        const numericFriendId = typeof friendId === 'number' ? friendId : parseInt(friendId, 10);
+        console.log('🔢 Using friend ID:', numericFriendId, 'type:', typeof numericFriendId);
+        
+        if (isNaN(numericFriendId)) {
+            console.error('❌ Invalid friend ID:', friendId);
+            return;
+        }
+        
+        const dmChannel = await this.dmManager.createOrGetDMChannel(numericFriendId);
         if (dmChannel) {
+            console.log('✅ DM channel created/found:', dmChannel);
             // DMチャンネルを開く
             await this.openDMChannel(dmChannel.id);
+        } else {
+            console.error('❌ Failed to create/get DM channel');
         }
     }
 

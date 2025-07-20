@@ -31,12 +31,17 @@ class DMManager {
     // 新しいDMチャンネルを作成または既存のものを取得
     async createOrGetDMChannel(userId) {
         try {
+            console.log('🚀 Creating DM channel with user ID:', userId);
+            console.log('📊 Request data:', { user_id: userId });
+            
             const response = await apiClient.request('/dm', {
                 method: 'POST',
                 body: {
                     user_id: userId
                 }
             });
+
+            console.log('📥 DM creation response:', response);
 
             if (response.success) {
                 console.log('✅ DMチャンネル作成/取得成功:', response.channel);
