@@ -383,7 +383,7 @@ class UIComponents {
             }
             
             return `
-                <div class="member-item" data-user-id="${memberId}" data-username="${member.nickname || member.userid}">
+                <div class="member-item" data-user-id="${memberId}" data-username="${member.userid}">
                     <div class="member-avatar">${avatarContent}</div>
                     <div class="member-info">
                         <span class="member-name">${member.nickname || member.userid}</span>
