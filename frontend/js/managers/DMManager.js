@@ -31,8 +31,20 @@ class DMManager {
     // 新しいDMチャンネルを作成または既存のものを取得
     async createOrGetDMChannel(userId) {
         try {
-            console.log('🚀 Creating DM channel with user ID:', userId);
+            console.log('🚀 Creating DM channel with user ID:', userId, 'type:', typeof userId);
             console.log('📊 Request data:', { user_id: userId });
+            
+            // リクエスト前にトークンの存在確認
+            console.log('🔑 Current token exists:', !!apiClient.token);
+            console.log('🔑 Token preview:', apiClient.token ? apiClient.token.substring(0, 20) + '...' : 'No token');
+            
+            // トークンの有効性をチェック
+            const isValidToken = await apiClient.verifyToken();
+            console.log('🔐 Token validity:', isValidToken);
+            
+            if (!isValidToken) {
+                throw new Error('認証トークンが無効です。再ログインが必要です。');
+            }
             
             const response = await apiClient.request('/dm', {
                 method: 'POST',

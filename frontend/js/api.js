@@ -199,6 +199,19 @@ class ApiClient {
         return this.request(endpoint, { method: 'DELETE', ...options });
     }
 
+    // トークンの有効性をチェック
+    async verifyToken() {
+        try {
+            console.log('🔍 Verifying token...');
+            const response = await this.request('/auth/verify', { method: 'GET' });
+            console.log('✅ Token verification result:', response);
+            return response.success;
+        } catch (error) {
+            console.error('❌ Token verification failed:', error);
+            return false;
+        }
+    }
+
     // ファイルアップロード
     async uploadFile(endpoint, file, additionalData = {}) {
         const formData = new FormData();
