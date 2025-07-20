@@ -37,16 +37,18 @@ class FriendsManager {
             });
 
             if (response.success) {
-                this.friendRequests = response.requests;
+                this.friendRequests = response;
                 console.log('✅ フレンド申請リスト読み込み成功:', this.friendRequests);
                 return this.friendRequests;
             } else {
                 console.error('フレンド申請リスト読み込みエラー:', response.message);
-                return { incoming: [], outgoing: [] };
+                this.friendRequests = { incoming: [], outgoing: [] };
+                return this.friendRequests;
             }
         } catch (error) {
             console.error('フレンド申請リスト読み込みエラー:', error);
-            return { incoming: [], outgoing: [] };
+            this.friendRequests = { incoming: [], outgoing: [] };
+            return this.friendRequests;
         }
     }
 
@@ -163,7 +165,7 @@ class FriendsManager {
 
     // 未読フレンド申請数を取得
     getUnreadRequestCount() {
-        return this.friendRequests.incoming ? this.friendRequests.incoming.length : 0;
+        return this.friendRequests && this.friendRequests.incoming ? this.friendRequests.incoming.length : 0;
     }
 }
 

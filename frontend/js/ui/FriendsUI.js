@@ -237,7 +237,9 @@ class FriendsUI {
 
     // フレンド申請リスト表示
     renderRequestsList() {
-        const { incoming, outgoing } = this.friendsManager.friendRequests;
+        // friendRequestsが未定義の場合のデフォルト値を設定
+        const friendRequests = this.friendsManager.friendRequests || { incoming: [], outgoing: [] };
+        const { incoming, outgoing } = friendRequests;
 
         const incomingHTML = incoming.map(request => `
             <div class="request-item incoming">
@@ -347,7 +349,7 @@ class FriendsUI {
     // 申請バッジを更新
     updateRequestBadge() {
         const badge = document.querySelector('.request-badge');
-        if (badge) {
+        if (badge && this.friendsManager) {
             const count = this.friendsManager.getUnreadRequestCount();
             badge.textContent = count;
             badge.style.display = count > 0 ? 'inline-block' : 'none';
