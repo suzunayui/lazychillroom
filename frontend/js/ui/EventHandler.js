@@ -8,11 +8,11 @@ class EventHandler {
         // モバイルメニューの初期化
         this.initMobileMenu();
         
-        // DMボタンクリック
-        const dmButton = document.getElementById('dmButton');
-        if (dmButton) {
-            dmButton.addEventListener('click', () => {
-                this.chatUI.showDMMode();
+        // フレンドボタンクリック
+        const friendsButton = document.getElementById('friendsButton');
+        if (friendsButton) {
+            friendsButton.addEventListener('click', () => {
+                this.showFriendsListDirectly();
             });
         }
 
@@ -83,7 +83,7 @@ class EventHandler {
         // フレンド追加ボタン
         document.addEventListener('click', (e) => {
             if (e.target.closest('#addFriendBtn') || e.target.closest('.add-friend')) {
-                this.showFriendsView();
+                this.showFriendsListDirectly();
             }
         });
 
@@ -669,10 +669,41 @@ class EventHandler {
             
             // メンバーリストを非表示
             this.chatUI.uiUtils.hideMembersList();
-            
-            console.log('✅ フレンド画面を表示しました');
         } catch (error) {
             console.error('フレンド画面表示エラー:', error);
+            this.chatUI.uiUtils.showNotification('フレンド画面の表示に失敗しました', 'error');
+        }
+    }
+
+    // フレンドリストを直接表示（中間画面をスキップ）
+    async showFriendsListDirectly() {
+        try {
+            // フレンドUIが初期化されていない場合は初期化
+            if (!this.chatUI.friendsUI) {
+                console.warn('FriendsUIが初期化されていません');
+                return;
+            }
+
+            // フレンドマネージャーとDMマネージャーを設定
+            if (this.chatUI.friendsManager && this.chatUI.dmManager) {
+                this.chatUI.friendsUI.setManagers(this.chatUI.friendsManager, this.chatUI.dmManager);
+            }
+
+            // 直接フレンドリストを表示
+            await this.chatUI.friendsUI.showFriendsListTab();
+            
+            // サイドバーの状態更新
+            this.chatUI.isDMMode = false;
+            document.querySelectorAll('.server-item, .dm-user-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.getElementById('friendsButton')?.classList.add('active');
+            
+            // メンバーリストを非表示
+            this.chatUI.uiUtils.hideMembersList();
+        } catch (error) {
+            console.error('フレンドリスト表示エラー:', error);
+            this.chatUI.uiUtils.showNotification('フレンドリストの表示に失敗しました', 'error');
         }
     }
 

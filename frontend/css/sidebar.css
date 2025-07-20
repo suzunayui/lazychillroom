@@ -10,15 +10,15 @@
     border-right: 1px solid #1e2124;
 }
 
-/* DMボタンセクション */
-.dm-button-section {
+/* フレンドボタンセクション */
+.friends-button-section {
     padding: 12px 12px 8px 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.dm-button {
+.friends-button {
     width: 48px;
     height: 48px;
     border-radius: 50%;
@@ -32,18 +32,18 @@
     position: relative;
 }
 
-.dm-button:hover {
+.friends-button:hover {
     border-radius: 16px;
     background-color: #43b581;
 }
 
-.dm-button.active {
+.friends-button.active {
     border-radius: 16px;
     background-color: #43b581;
     color: #ffffff;
 }
 
-.dm-button.active::before {
+.friends-button.active::before {
     content: '';
     position: absolute;
     left: -8px;
@@ -55,14 +55,14 @@
     border-radius: 0 2px 2px 0;
 }
 
-.dm-button-icon {
+.friends-button-icon {
     font-size: 20px;
     font-weight: 600;
     color: #43b581;
 }
 
-.dm-button:hover .dm-button-icon,
-.dm-button.active .dm-button-icon {
+.friends-button:hover .friends-button-icon,
+.friends-button.active .friends-button-icon {
     color: #ffffff;
 }
 

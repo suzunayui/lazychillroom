@@ -6,14 +6,12 @@ class UIComponents {
             <div class="chat-container">
                 <!-- 左サイドバー（サーバー選択とDM） -->
                 <div class="left-sidebar">
-                    <!-- ダイレクトメッセージボタン -->
-                    <div class="dm-button-section">
-                        <div class="dm-button" id="dmButton">
-                            <div class="dm-button-icon">@</div>
-                        </div>
+                <!-- フレンドボタン -->
+                <div class="friends-button-section">
+                    <div class="friends-button" id="friendsButton">
+                        <div class="friends-button-icon">👥</div>
                     </div>
-
-                    <!-- 区切り線 -->
+                </div>                    <!-- 区切り線 -->
                     <div class="separator"></div>
 
                     <!-- サーバー選択セクション -->

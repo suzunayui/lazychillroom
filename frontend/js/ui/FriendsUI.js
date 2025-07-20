@@ -46,6 +46,39 @@ class FriendsUI {
         }
     }
 
+    // フレンドリストを直接表示（中間画面をスキップ）
+    async showFriendsListTab() {
+        try {
+            console.log('📝 フレンドリストタブ表示開始');
+            
+            // フレンドメイン画面のHTMLを表示
+            const html = this.createFriendsMainHTML();
+            
+            // メインコンテンツエリアに表示
+            const mainContent = document.getElementById('chatMessages') || 
+                              document.getElementById('mainContent') || 
+                              document.getElementById('channelContent');
+            if (mainContent) {
+                mainContent.innerHTML = html;
+                this.bindFriendsEvents();
+                
+                // 直接フレンドリストタブを表示
+                this.currentView = 'friends';
+                this.updateFriendsContent();
+                
+                // ナビゲーションボタンのアクティブ状態を更新
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === 'friends');
+                });
+            }
+            
+            console.log('✅ フレンドリストタブ表示完了');
+        } catch (error) {
+            console.error('フレンドリストタブ表示エラー:', error);
+            this.chatUI.uiUtils.showNotification('フレンドリストの表示に失敗しました', 'error');
+        }
+    }
+
     // フレンドメイン画面のHTML
     createFriendsMainHTML() {
         return `
