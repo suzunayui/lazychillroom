@@ -51,6 +51,13 @@ class FriendsUI {
         try {
             console.log('📝 フレンドリストタブ表示開始');
             
+            // フレンドデータとフレンド申請を読み込み
+            console.log('🔄 フレンドデータとフレンド申請を読み込み中...');
+            await Promise.all([
+                this.friendsManager.loadFriends(),
+                this.friendsManager.loadFriendRequests()
+            ]);
+            
             // フレンドメイン画面のHTMLを表示
             const html = this.createFriendsMainHTML();
             
