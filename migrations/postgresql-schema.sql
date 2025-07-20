@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS guilds (
 -- チャンネルテーブル
 CREATE TABLE IF NOT EXISTS channels (
   id SERIAL PRIMARY KEY,
-  guild_id INTEGER NOT NULL REFERENCES guilds(id) ON DELETE CASCADE,
-  name VARCHAR(100) NOT NULL,
+  guild_id INTEGER REFERENCES guilds(id) ON DELETE CASCADE,
+  name VARCHAR(100),
   topic TEXT,
   type VARCHAR(20) DEFAULT 'text' CHECK (type IN ('text', 'voice', 'dm')),
   position INTEGER DEFAULT 0,

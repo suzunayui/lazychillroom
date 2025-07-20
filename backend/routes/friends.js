@@ -19,8 +19,7 @@ router.get('/', async (req, res) => {
         u.id as friend_id,
         u.userid,
         u.nickname,
-        u.avatar_url,
-        u.last_login
+        u.avatar_url
       FROM friendships f
       JOIN users u ON (
         CASE 

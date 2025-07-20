@@ -143,6 +143,8 @@ class GuildController {
           u.userid,
           u.nickname,
           u.avatar_url,
+          u.status,
+          u.last_activity,
           gm.role,
           gm.joined_at
         FROM users u

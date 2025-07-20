@@ -17,6 +17,9 @@ sudo docker compose down -v
 
 sudo docker system df && sudo docker system prune
 
+cd lazychillroom
+git pull
+sudo docker compose restart backend
 sudo supervisorctl shutdown
 supervisord -c supervisord.conf
 supervisorctl status

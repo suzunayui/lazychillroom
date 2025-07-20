@@ -401,9 +401,16 @@ class ChatUI {
         const safeMembers = members || [];
         console.log('📝 Safe members array:', safeMembers);
 
-        // 一時的にすべてのメンバーをオンラインとして表示（デバッグ用）
-        const online = safeMembers; // すべてのメンバーをオンラインに
-        const offline = []; // オフラインは空に
+        // メンバーをステータスに基づいて分類
+        const online = safeMembers.filter(member => {
+            const status = member.status || 'offline';
+            return status === 'online' || status === 'away' || status === 'busy';
+        });
+        
+        const offline = safeMembers.filter(member => {
+            const status = member.status || 'offline';
+            return status === 'offline' || status === 'invisible';
+        });
         
         console.log('📊 Online members:', online.length, online);
         console.log('📊 Offline members:', offline.length, offline);

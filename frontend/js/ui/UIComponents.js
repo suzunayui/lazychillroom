@@ -323,6 +323,7 @@ class UIComponents {
             console.log('🔍 Member id:', member.id);
             console.log('🔍 Member user_id:', member.user_id);
             console.log('🔍 Member avatar_url:', member.avatar_url);
+            console.log('🔍 Member status:', member.status);
             
             // 現在ログインしているユーザーの情報を取得
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -347,14 +348,50 @@ class UIComponents {
                 avatarContent = (member.nickname || member.userid).charAt(0).toUpperCase();
             }
             
+            // ステータスに応じたアクティビティテキストを決定
+            let activityText;
+            const status = member.status || 'offline';
+            if (type === 'online') {
+                switch (status) {
+                    case 'online':
+                        activityText = member.activity || 'LazyChillRoomを使用中';
+                        break;
+                    case 'away':
+                        activityText = '退席中';
+                        break;
+                    case 'busy':
+                        activityText = '取り込み中';
+                        break;
+                    default:
+                        activityText = 'LazyChillRoomを使用中';
+                }
+            } else {
+                // オフライン時の表示
+                if (member.last_activity) {
+                    const lastSeen = new Date(member.last_activity);
+                    const now = new Date();
+                    const diffMinutes = Math.floor((now - lastSeen) / (1000 * 60));
+                    
+                    if (diffMinutes < 60) {
+                        activityText = `${diffMinutes}分前にオンライン`;
+                    } else if (diffMinutes < 1440) {
+                        activityText = `${Math.floor(diffMinutes / 60)}時間前にオンライン`;
+                    } else {
+                        activityText = `${Math.floor(diffMinutes / 1440)}日前にオンライン`;
+                    }
+                } else {
+                    activityText = '最終ログイン: 不明';
+                }
+            }
+            
             return `
                 <div class="member-item" data-user-id="${memberId}" data-username="${member.nickname || member.userid}">
                     <div class="member-avatar">${avatarContent}</div>
                     <div class="member-info">
                         <span class="member-name">${member.nickname || member.userid}</span>
-                        <span class="member-activity">${type === 'online' ? (member.activity || 'LazyChillRoomを使用中') : (member.lastSeen || '最終ログイン: 不明')}</span>
+                        <span class="member-activity">${activityText}</span>
                     </div>
-                    <div class="member-status ${type}"></div>
+                    <div class="member-status ${status}"></div>
                 </div>
             `;
         }).join('');
