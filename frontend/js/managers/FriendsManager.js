@@ -103,8 +103,8 @@ class FriendsManager {
     // フレンド申請を拒否
     async rejectFriendRequest(requestId) {
         try {
-            const response = await apiClient.request(`/friends/request/${requestId}/reject`, {
-                method: 'POST'
+            const response = await apiClient.request(`/friends/request/${requestId}/decline`, {
+                method: 'DELETE'
             });
 
             if (response.success) {

@@ -180,7 +180,7 @@ router.post('/request', async (req, res) => {
 });
 
 // Accept friend request
-router.post('/accept/:requestId', async (req, res) => {
+router.post('/request/:requestId/accept', async (req, res) => {
   try {
     const { requestId } = req.params;
 
@@ -226,7 +226,7 @@ router.post('/accept/:requestId', async (req, res) => {
 });
 
 // Decline friend request
-router.delete('/decline/:requestId', async (req, res) => {
+router.delete('/request/:requestId/decline', async (req, res) => {
   try {
     const { requestId } = req.params;
 
