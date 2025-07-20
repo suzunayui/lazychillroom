@@ -7,7 +7,7 @@ class ServerManager {
     // サーバー切り替え
     async switchServer(serverItem, skipChannelLoad = false) {
         this.chatUI.isDMMode = false;
-        document.getElementById('dmButton').classList.remove('active');
+        document.getElementById('friendsButton').classList.remove('active');
         
         document.querySelectorAll('.server-item').forEach(item => {
             item.classList.remove('active');
@@ -92,7 +92,7 @@ class ServerManager {
     showMyServer(myServer) {
         // DMモードを無効化
         this.chatUI.isDMMode = false;
-        document.getElementById('dmButton').classList.remove('active');
+        document.getElementById('friendsButton').classList.remove('active');
         
         // 現在のサーバー選択を解除
         document.querySelectorAll('.server-item').forEach(item => {

@@ -102,7 +102,7 @@ class ChatUI {
         this.isDMMode = true;
         
         await this.serverManager.showDMUserList();
-        document.getElementById('dmButton').classList.add('active');
+        document.getElementById('friendsButton').classList.add('active');
         document.querySelectorAll('.server-item').forEach(item => {
             item.classList.remove('active');
         });
@@ -922,10 +922,10 @@ class ChatUI {
                 item.classList.remove('active');
             });
             
-            // DMボタンの状態をクリア
-            const dmButton = document.getElementById('dmButton');
-            if (dmButton) {
-                dmButton.classList.remove('active');
+            // フレンドボタンの状態をクリア
+            const friendsButton = document.getElementById('friendsButton');
+            if (friendsButton) {
+                friendsButton.classList.remove('active');
             }
             
             // メンバーリストを非表示

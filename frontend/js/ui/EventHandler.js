@@ -665,7 +665,7 @@ class EventHandler {
             document.querySelectorAll('.server-item, .dm-user-item').forEach(item => {
                 item.classList.remove('active');
             });
-            document.getElementById('dmButton')?.classList.remove('active');
+            document.getElementById('friendsButton')?.classList.remove('active');
             
             // メンバーリストを非表示
             this.chatUI.uiUtils.hideMembersList();
