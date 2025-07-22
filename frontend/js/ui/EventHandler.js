@@ -706,12 +706,21 @@ class EventHandler {
     // フレンドリストを直接表示（中間画面をスキップ）
     async showFriendsListDirectly() {
         try {
-            console.log('🎯 フレンドボタンクリック - フレンドリスト直接表示開始');
+            console.log('🎯 フレンドボタンクリック - DMモード表示開始');
             
-            // フレンドUIが初期化されていない場合は初期化
-            if (!this.chatUI.friendsUI) {
-                console.warn('FriendsUIが初期化されていません');
-                return;
+            // 各マネージャーの初期化確認
+            if (!this.chatUI.friendsManager) {
+                console.warn('FriendsManagerが初期化されていません');
+                if (window.FriendsManager) {
+                    this.chatUI.friendsManager = new FriendsManager();
+                }
+            }
+            
+            if (!this.chatUI.dmManager) {
+                console.warn('DMManagerが初期化されていません');
+                if (window.DMManager) {
+                    this.chatUI.dmManager = new DMManager();
+                }
             }
 
             // 現在の状態をクリア
@@ -721,8 +730,8 @@ class EventHandler {
             
             console.log('🔄 状態クリア完了 - currentChannel:', this.chatUI.currentChannel, 'currentGuild:', this.chatUI.currentGuild);
             
-            // 左サイドバーをDMモードに変更（テキストチャンネルリストをDMリストに置き換え）
-            console.log('📋 左サイドバーをDMモードに更新中...');
+            // 左サイドバーをDMモードに変更（統合されたDM+フレンドリストを表示）
+            console.log('📋 左サイドバーをDM+フレンドモードに更新中...');
             await this.chatUI.serverManager.showDMUserList();
             
             // サイドバーの状態更新
@@ -734,20 +743,48 @@ class EventHandler {
             // メンバーリストを非表示
             this.chatUI.uiUtils.hideMembersList();
             
-            // フレンドマネージャーとDMマネージャーを設定
-            if (this.chatUI.friendsManager && this.chatUI.dmManager) {
-                this.chatUI.friendsUI.setManagers(this.chatUI.friendsManager, this.chatUI.dmManager);
+            // 中央エリアにはDM選択を促すメッセージを表示
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.innerHTML = `
+                    <div class="dm-welcome-screen">
+                        <div class="dm-welcome-content">
+                            <i class="fas fa-envelope dm-welcome-icon"></i>
+                            <h2>ダイレクトメッセージ</h2>
+                            <p>左のフレンドリストからフレンドを選択してDMを開始しましょう。</p>
+                            <div class="dm-welcome-tips">
+                                <div class="tip">
+                                    <i class="fas fa-user-friends"></i>
+                                    <span>フレンドをクリックしてDMを開始</span>
+                                </div>
+                                <div class="tip">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span>フレンド追加で新しい友達を追加</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
-
-            console.log('🎭 フレンドリストタブ表示開始');
-            // 直接フレンドリストを表示
-            await this.chatUI.friendsUI.showFriendsListTab();
             
-            console.log('✅ フレンドリスト表示完了');
+            // チャットヘッダーを更新
+            const chatHeader = document.querySelector('.chat-header');
+            if (chatHeader) {
+                chatHeader.innerHTML = `
+                    <div class="channel-info">
+                        <span class="channel-name">
+                            <i class="fas fa-envelope"></i>
+                            ダイレクトメッセージ
+                        </span>
+                    </div>
+                `;
+            }
+            
+            console.log('✅ DMモード表示完了');
 
         } catch (error) {
-            console.error('フレンドリスト表示エラー:', error);
-            this.chatUI.uiUtils.showNotification('フレンドリストの表示に失敗しました', 'error');
+            console.error('DMモード表示エラー:', error);
+            this.chatUI.uiUtils.showNotification('DMモードの表示に失敗しました', 'error');
         }
     }
 
