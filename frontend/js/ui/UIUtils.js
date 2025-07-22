@@ -209,6 +209,20 @@ class UIUtils {
             membersSidebar.style.display = 'none';
             membersSidebar.classList.remove('show');
         }
+        
+        // 他の可能性のあるメンバーサイドバー要素も非表示にする
+        const membersListContainer = document.querySelector('.members-sidebar');
+        if (membersListContainer) {
+            membersListContainer.style.display = 'none';
+            membersListContainer.classList.remove('show');
+        }
+        
+        // モバイル版メンバーサイドバーも閉じる
+        const rightSidebar = document.querySelector('.right-sidebar');
+        if (rightSidebar) {
+            rightSidebar.style.display = 'none';
+            rightSidebar.classList.remove('show');
+        }
     }
 
     updateMembersList(members) {

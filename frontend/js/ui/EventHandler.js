@@ -740,13 +740,20 @@ class EventHandler {
             });
             document.getElementById('friendsButton')?.classList.add('active');
             
-            // メンバーリストを非表示
+            // メンバーリストを強制的に非表示
             this.chatUI.uiUtils.hideMembersList();
             
-            // メッセージ入力エリアも非表示（DMモードでは不要）
-            const messageInputContainer = document.querySelector('.message-input-container');
-            if (messageInputContainer) {
-                messageInputContainer.style.display = 'none';
+            // 右サイドバーを確実に非表示にする
+            const membersSidebar = document.getElementById('membersSidebar');
+            if (membersSidebar) {
+                membersSidebar.style.display = 'none';
+                membersSidebar.classList.remove('show');
+            }
+            
+            // メンバーリストコンテナも非表示
+            const membersListContainer = document.querySelector('.members-sidebar');
+            if (membersListContainer) {
+                membersListContainer.style.display = 'none';
             }
             
             // 中央エリアにはDM選択を促すメッセージを表示
