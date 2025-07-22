@@ -143,6 +143,12 @@ class DMManager {
             // メンバーリストを非表示
             window.chatUI.uiUtils.hideMembersList();
             
+            // メッセージ入力エリアを表示（DMチャットが開始されたため）
+            const messageInputContainer = document.querySelector('.message-input-container');
+            if (messageInputContainer) {
+                messageInputContainer.style.display = 'flex';
+            }
+            
             // アクティブ状態を更新
             document.querySelectorAll('.channel-item, .dm-user-item').forEach(item => {
                 item.classList.remove('active');

@@ -743,6 +743,12 @@ class EventHandler {
             // メンバーリストを非表示
             this.chatUI.uiUtils.hideMembersList();
             
+            // メッセージ入力エリアも非表示（DMモードでは不要）
+            const messageInputContainer = document.querySelector('.message-input-container');
+            if (messageInputContainer) {
+                messageInputContainer.style.display = 'none';
+            }
+            
             // 中央エリアにはDM選択を促すメッセージを表示
             const chatMessages = document.getElementById('chatMessages');
             if (chatMessages) {
