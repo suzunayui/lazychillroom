@@ -504,6 +504,66 @@
     background-color: #f04747;
 }
 
+/* DMセクションタイトル */
+.dm-section-title {
+    color: #8e9297;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin: 16px 16px 8px 16px;
+    letter-spacing: 0.02em;
+}
+
+.dm-section-title:first-child {
+    margin-top: 8px;
+}
+
+/* DMエンプティステート */
+.dm-empty-state {
+    padding: 16px;
+    text-align: center;
+    color: #72767d;
+    font-size: 14px;
+}
+
+.dm-empty-state i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.6;
+    display: block;
+}
+
+.dm-empty-state span {
+    font-size: 13px;
+}
+
+/* ステータスインジケーター */
+.status-indicator {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #2f3136;
+}
+
+.status-indicator.status-online {
+    background-color: #43b581;
+}
+
+.status-indicator.status-idle {
+    background-color: #faa61a;
+}
+
+.status-indicator.status-dnd {
+    background-color: #f04747;
+}
+
+.status-indicator.status-offline {
+    background-color: #747f8d;
+}
+
 /* チャンネルセクション */
 .channels-section {
     flex: 1;

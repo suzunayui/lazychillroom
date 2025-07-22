@@ -87,6 +87,34 @@ class EventHandler {
             }
         });
 
+        // DMユーザーとフレンドのクリックイベント
+        document.addEventListener('click', async (e) => {
+            const dmUserItem = e.target.closest('.dm-user-item');
+            if (dmUserItem) {
+                // フレンド追加ボタンは除外
+                if (dmUserItem.classList.contains('add-friend')) {
+                    return;
+                }
+                
+                // フレンドアイテムの場合
+                if (dmUserItem.classList.contains('friend-item')) {
+                    const friendId = dmUserItem.dataset.friendId;
+                    if (friendId) {
+                        console.log('🎯 フレンドをクリック:', friendId);
+                        await this.startDMWithFriend(parseInt(friendId, 10));
+                    }
+                    return;
+                }
+                
+                // DMアイテムの場合
+                const dmId = dmUserItem.dataset.dm;
+                if (dmId) {
+                    console.log('🎯 DMをクリック:', dmId);
+                    await this.openDMChannel(parseInt(dmId, 10));
+                }
+            }
+        });
+
         // メッセージ送信
         const chatForm = document.getElementById('chatForm');
         if (chatForm) {
@@ -859,6 +887,59 @@ class EventHandler {
         } catch (error) {
             console.error('フレンド申請エラー:', error);
             this.chatUI.uiUtils.showNotification('フレンド申請の送信に失敗しました', 'error');
+        }
+    }
+
+    // フレンドからDMを開始
+    async startDMWithFriend(friendId) {
+        try {
+            console.log('🎯 フレンドからDM開始:', friendId);
+            
+            if (!this.chatUI.dmManager) {
+                console.error('DMManagerが初期化されていません');
+                return;
+            }
+
+            // DMチャンネルを作成または取得
+            const dmChannel = await this.chatUI.dmManager.createOrGetDMChannel(friendId);
+            if (dmChannel) {
+                console.log('✅ DMチャンネル取得成功:', dmChannel);
+                // DMチャンネルに切り替える
+                await this.chatUI.dmManager.switchToDMChannel(dmChannel);
+                this.chatUI.uiUtils.showNotification('DMを開始しました', 'success');
+            } else {
+                console.error('❌ DMチャンネルの作成に失敗');
+                this.chatUI.uiUtils.showNotification('DMの開始に失敗しました', 'error');
+            }
+        } catch (error) {
+            console.error('フレンドからのDM開始エラー:', error);
+            this.chatUI.uiUtils.showNotification('DMの開始に失敗しました', 'error');
+        }
+    }
+
+    // DMチャンネルを開く
+    async openDMChannel(dmId) {
+        try {
+            console.log('🎯 DMチャンネルを開く:', dmId);
+            
+            if (!this.chatUI.dmManager) {
+                console.error('DMManagerが初期化されていません');
+                return;
+            }
+
+            // DMチャンネルを取得
+            const dmChannel = this.chatUI.dmManager.findDMChannelById(dmId);
+            if (dmChannel) {
+                console.log('✅ DMチャンネル見つかりました:', dmChannel);
+                // DMチャンネルに切り替える
+                await this.chatUI.dmManager.switchToDMChannel(dmChannel);
+            } else {
+                console.error('❌ DMチャンネルが見つかりません:', dmId);
+                this.chatUI.uiUtils.showNotification('DMチャンネルが見つかりません', 'error');
+            }
+        } catch (error) {
+            console.error('DMチャンネルを開くエラー:', error);
+            this.chatUI.uiUtils.showNotification('DMチャンネルを開けませんでした', 'error');
         }
     }
 

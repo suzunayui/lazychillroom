@@ -484,11 +484,27 @@ class ServerManager {
             addChannelBtn.style.display = 'none';
         }
         
+        // フレンドマネージャーが初期化されていない場合は初期化
+        if (!this.chatUI.friendsManager) {
+            console.warn('FriendsManagerが初期化されていません。初期化します...');
+            if (window.FriendsManager) {
+                this.chatUI.friendsManager = new FriendsManager();
+            }
+        }
+        
+        // フレンドリストとDMチャンネルを読み込み
         const dmChannels = await this.chatUI.chatManager.loadChannels();
         
-        // DMManagerのgenerateDMListHTMLを使用してフレンドボタンを含める
+        // DMManagerにDMチャンネルを設定
         if (this.chatUI.dmManager) {
             this.chatUI.dmManager.dmChannels = dmChannels;
+            
+            // フレンドリストを読み込み
+            if (this.chatUI.friendsManager) {
+                await this.chatUI.friendsManager.loadFriends();
+            }
+            
+            // 統合されたリストを表示
             channelsList.innerHTML = this.chatUI.dmManager.generateDMListHTML();
         } else {
             // フォールバック: UIComponentsを使用

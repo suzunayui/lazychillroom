@@ -182,33 +182,71 @@ class DMManager {
         }
     }
 
-    // DMチャンネルリストのHTML生成
+    // DMチャンネルリストのHTML生成（フレンドリスト統合版）
     generateDMListHTML() {
         let html = '';
         
-        this.dmChannels.forEach(dm => {
-            const participant = dm.participants[0];
-            if (participant) {
-                html += `
-                    <div class="dm-user-item" data-dm="${dm.id}">
-                        <div class="dm-avatar">
-                            ${participant.avatar_url ? 
-                                `<img src="${participant.avatar_url}" alt="${participant.userid}">` : 
-                                participant.userid.charAt(0).toUpperCase()
-                            }
+        // 既存のDMチャンネルを表示
+        if (this.dmChannels && this.dmChannels.length > 0) {
+            html += `<div class="dm-section-title">DM</div>`;
+            this.dmChannels.forEach(dm => {
+                const participant = dm.participants[0];
+                if (participant) {
+                    html += `
+                        <div class="dm-user-item" data-dm="${dm.id}">
+                            <div class="dm-avatar">
+                                ${participant.avatar_url ? 
+                                    `<img src="${participant.avatar_url}" alt="${participant.userid}">` : 
+                                    participant.userid.charAt(0).toUpperCase()
+                                }
+                            </div>
+                            <span class="dm-name">${UIUtils.escapeHtml(participant.userid)}</span>
+                            <div class="dm-status online"></div>
                         </div>
-                        <span class="dm-name">${UIUtils.escapeHtml(participant.userid)}</span>
-                        <div class="dm-status online"></div>
+                    `;
+                }
+            });
+        }
+        
+        // フレンドリストを表示
+        if (window.chatUI && window.chatUI.friendsManager && window.chatUI.friendsManager.friends) {
+            const friends = window.chatUI.friendsManager.friends;
+            if (friends.length > 0) {
+                html += `<div class="dm-section-title">フレンド — ${friends.length}人</div>`;
+                friends.forEach(friend => {
+                    const avatarUrl = friend.avatar_url;
+                    const displayName = friend.nickname || friend.userid;
+                    const statusClass = `status-${friend.status || 'offline'}`;
+                    
+                    html += `
+                        <div class="dm-user-item friend-item" data-friend-id="${friend.friend_id}">
+                            <div class="dm-avatar">
+                                ${avatarUrl ? 
+                                    `<img src="${avatarUrl}" alt="${displayName}">` : 
+                                    displayName.charAt(0).toUpperCase()
+                                }
+                                <div class="status-indicator ${statusClass}"></div>
+                            </div>
+                            <span class="dm-name">${UIUtils.escapeHtml(displayName)}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                html += `<div class="dm-section-title">フレンド</div>`;
+                html += `
+                    <div class="dm-empty-state">
+                        <i class="fas fa-user-friends"></i>
+                        <span>フレンドがいません</span>
                     </div>
                 `;
             }
-        });
+        }
         
         // フレンド追加ボタン
         html += `
             <div class="dm-user-item add-friend" id="addFriendBtn" title="フレンド管理画面を開く">
                 <div class="dm-avatar plus">👥</div>
-                <span class="dm-name">フレンド</span>
+                <span class="dm-name">フレンド追加</span>
             </div>
         `;
         
@@ -218,6 +256,36 @@ class DMManager {
     // DM機能の初期化
     async init() {
         await this.loadDMChannels();
+        // フレンドリストも読み込む
+        if (window.chatUI && window.chatUI.friendsManager) {
+            await window.chatUI.friendsManager.loadFriends();
+        }
+    }
+
+    // DMリストとフレンドリストを更新
+    async updateDMAndFriendsList() {
+        // DMチャンネルを再読み込み
+        await this.loadDMChannels();
+        
+        // フレンドリストを再読み込み
+        if (window.chatUI && window.chatUI.friendsManager) {
+            await window.chatUI.friendsManager.loadFriends();
+        }
+        
+        // UIを更新
+        this.updateDMListUI();
+    }
+
+    // DMリストUIを更新
+    updateDMListUI() {
+        const channelsList = document.getElementById('channelsList');
+        if (channelsList) {
+            // 現在がDMモードの場合のみ更新
+            const sectionTitle = document.getElementById('sectionTitle');
+            if (sectionTitle && sectionTitle.textContent === 'ダイレクトメッセージ') {
+                channelsList.innerHTML = this.generateDMListHTML();
+            }
+        }
     }
 
     // DMチャンネルを削除

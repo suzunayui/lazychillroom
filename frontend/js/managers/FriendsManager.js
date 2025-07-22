@@ -89,6 +89,10 @@ class FriendsManager {
                     this.loadFriends(),
                     this.loadFriendRequests()
                 ]);
+                
+                // DMリストも更新
+                this.updateDMList();
+                
                 return { success: true, message: response.message };
             } else {
                 console.error('フレンド申請承認エラー:', response.message);
@@ -133,6 +137,10 @@ class FriendsManager {
                 console.log('✅ フレンド削除成功');
                 // フレンドリストを更新
                 await this.loadFriends();
+                
+                // DMリストも更新
+                this.updateDMList();
+                
                 return { success: true, message: response.message };
             } else {
                 console.error('フレンド削除エラー:', response.message);
@@ -166,6 +174,13 @@ class FriendsManager {
     // 未読フレンド申請数を取得
     getUnreadRequestCount() {
         return this.friendRequests && this.friendRequests.incoming ? this.friendRequests.incoming.length : 0;
+    }
+
+    // DMリストを更新
+    updateDMList() {
+        if (window.chatUI && window.chatUI.dmManager) {
+            window.chatUI.dmManager.updateDMListUI();
+        }
     }
 }
 
