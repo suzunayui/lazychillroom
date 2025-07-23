@@ -28,16 +28,30 @@ class EventHandler {
 
         // チャンネル切り替え（DMユーザー切り替えも含む）
         document.addEventListener('click', async (e) => {
-            if (e.target.closest('.channel-item')) {
-                const item = e.target.closest('.channel-item');
-                await this.chatUI.switchChannel(item);
-                // モバイルでチャンネル切り替え後にメニューを閉じる
+            // チャンネルアイテムのクリック処理
+            const channelItem = e.target.closest('.channel-item');
+            if (channelItem && channelItem.dataset.channel) {
+                console.log('🔄 チャンネルアイテムクリック検出:', channelItem.dataset.channel);
+                e.stopPropagation(); // イベントの伝播を停止
+                
+                // DMモードを無効化（サーバーチャンネルに切り替える場合）
+                this.chatUI.isDMMode = false;
+                document.getElementById('friendsButton').classList.remove('active');
+                
+                await this.chatUI.switchChannel(channelItem);
                 this.closeMobileMenus();
-            } else if (e.target.closest('.dm-user-item:not(.add-friend)')) {
-                const item = e.target.closest('.dm-user-item');
-                await this.chatUI.switchDM(item);
-                // モバイルでDM切り替え後にメニューを閉じる
+                return;
+            }
+            
+            // DMユーザーアイテムのクリック処理
+            const dmItem = e.target.closest('.dm-user-item:not(.add-friend)');
+            if (dmItem && (dmItem.dataset.dm || dmItem.dataset.friendId)) {
+                console.log('🔄 DMアイテムクリック検出:', dmItem.dataset.dm || dmItem.dataset.friendId);
+                e.stopPropagation(); // イベントの伝播を停止
+                
+                await this.chatUI.switchDM(dmItem);
                 this.closeMobileMenus();
+                return;
             }
         });
 
@@ -231,19 +245,28 @@ class EventHandler {
         const channelId = channelItem.dataset.channel;
         console.log(`🔄 チャンネル切り替え開始 (ID: ${channelId})`);
         
+        // DMモードを確実に無効化（サーバーチャンネルに移動する場合）
+        this.chatUI.isDMMode = false;
+        
         document.querySelectorAll('.channel-item, .dm-user-item').forEach(item => {
             item.classList.remove('active');
         });
 
         channelItem.classList.add('active');
         
-        // チャンネルを検索する際、通常のサーバーチャンネルとマイサーバーチャンネルの両方を確認
-        let channel = this.chatUI.chatManager.channels.find(ch => ch.id == channelId);
+        // チャンネル検索の優先順位を明確化
+        let channel = null;
         
-        // 通常のチャンネルで見つからない場合、マイサーバーのチャンネルから検索
-        if (!channel && this.chatUI.currentGuild && this.chatUI.currentGuild.channels) {
+        // 1. 現在のギルドのチャンネルから検索（最優先）
+        if (this.chatUI.currentGuild && this.chatUI.currentGuild.channels) {
             channel = this.chatUI.currentGuild.channels.find(ch => ch.id == channelId);
-            console.log(`🏠 マイサーバーチャンネルから検索: ${channel ? '見つかりました' : '見つかりません'}`);
+            console.log(`🏠 現在のギルドから検索: ${channel ? '見つかりました' : '見つかりません'}`);
+        }
+        
+        // 2. ChatManagerの一般チャンネルから検索
+        if (!channel && this.chatUI.chatManager.channels) {
+            channel = this.chatUI.chatManager.channels.find(ch => ch.id == channelId);
+            console.log(`📋 ChatManagerから検索: ${channel ? '見つかりました' : '見つかりません'}`);
         }
         
         if (channel) {
@@ -279,11 +302,16 @@ class EventHandler {
                 }
             }
             
-            // マイサーバーの場合はメンバーリストを非表示
+            // メンバーリスト表示の判定を修正
             if (this.chatUI.currentGuild && this.chatUI.currentGuild.is_personal_server) {
+                // マイサーバーの場合はメンバーリストを非表示
                 this.chatUI.uiUtils.hideMembersList();
-            } else {
+            } else if (this.chatUI.currentGuild && !this.chatUI.isDMMode) {
+                // 通常のサーバーでDMモードでない場合はメンバーリストを表示
                 this.chatUI.uiUtils.showMembersList();
+            } else {
+                // その他の場合は非表示
+                this.chatUI.uiUtils.hideMembersList();
             }
             
             // 状態を保存
@@ -292,9 +320,11 @@ class EventHandler {
             console.log(`✅ チャンネル切り替え完了: ${channel.name} (${channel.type})`);
         } else {
             console.error(`❌ チャンネルが見つかりません: ID=${channelId}`);
-            console.log('利用可能なチャンネル:', this.chatUI.chatManager.channels);
+            console.log('現在のギルド:', this.chatUI.currentGuild);
+            console.log('ChatManagerのチャンネル数:', this.chatUI.chatManager.channels?.length || 0);
             if (this.chatUI.currentGuild && this.chatUI.currentGuild.channels) {
-                console.log('マイサーバーチャンネル:', this.chatUI.currentGuild.channels);
+                console.log('現在のギルドのチャンネル数:', this.chatUI.currentGuild.channels.length);
+                console.log('現在のギルドのチャンネル一覧:', this.chatUI.currentGuild.channels.map(ch => `${ch.name}(${ch.id})`));
             }
         }
     }
