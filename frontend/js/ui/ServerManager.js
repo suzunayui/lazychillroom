@@ -484,6 +484,19 @@ class ServerManager {
             addChannelBtn.style.display = 'none';
         }
         
+        // DMモードでは右サイドバーを確実に非表示にする
+        const membersSidebar = document.getElementById('membersSidebar');
+        if (membersSidebar) {
+            membersSidebar.style.display = 'none';
+            membersSidebar.classList.remove('show');
+        }
+        
+        const membersListContainer = document.querySelector('.members-sidebar');
+        if (membersListContainer) {
+            membersListContainer.style.display = 'none';
+            membersListContainer.classList.remove('show');
+        }
+        
         // フレンドマネージャーが初期化されていない場合は初期化
         if (!this.chatUI.friendsManager) {
             console.warn('FriendsManagerが初期化されていません。初期化します...');

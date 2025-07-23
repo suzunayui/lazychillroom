@@ -143,6 +143,19 @@ class DMManager {
             // メンバーリストを非表示
             window.chatUI.uiUtils.hideMembersList();
             
+            // 右サイドバーを確実に非表示にする（追加の保険）
+            const membersSidebar = document.getElementById('membersSidebar');
+            if (membersSidebar) {
+                membersSidebar.style.display = 'none';
+                membersSidebar.classList.remove('show');
+            }
+            
+            const membersListContainer = document.querySelector('.members-sidebar');
+            if (membersListContainer) {
+                membersListContainer.style.display = 'none';
+                membersListContainer.classList.remove('show');
+            }
+            
             // メッセージ入力エリアを表示（DMチャットが開始されたため）
             const messageInputContainer = document.querySelector('.message-input-container');
             if (messageInputContainer) {
