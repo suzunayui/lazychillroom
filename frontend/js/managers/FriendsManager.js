@@ -11,21 +11,36 @@ class FriendsManager {
     // フレンドリストを取得
     async loadFriends() {
         try {
+            console.log('🔄 FriendsManager: フレンドリスト取得開始');
+            
             const response = await apiClient.request('/friends', {
                 method: 'GET'
             });
 
+            console.log('📡 FriendsManager: API応答:', response);
+
             if (response.success) {
-                this.friends = response.friends;
-                console.log('✅ フレンドリスト読み込み成功:', this.friends);
+                this.friends = response.friends || [];
+                console.log('✅ フレンドリスト読み込み成功:', this.friends.length, '人のフレンド');
                 return this.friends;
             } else {
-                console.error('フレンドリスト読み込みエラー:', response.message);
+                console.error('❌ フレンドリスト読み込みエラー:', response.message);
+                this.friends = [];
                 return [];
             }
         } catch (error) {
-            console.error('フレンドリスト読み込みエラー:', error);
-            return [];
+            console.error('❌ フレンドリスト読み込み例外:', {
+                message: error.message,
+                status: error.status,
+                response: error.response,
+                stack: error.stack
+            });
+            
+            // エラー時は空配列で初期化
+            this.friends = [];
+            
+            // エラーを再スローして上位で詳細エラー処理ができるようにする
+            throw error;
         }
     }
 
@@ -37,16 +52,21 @@ class FriendsManager {
             });
 
             if (response.success) {
-                this.friendRequests = response.requests;
+                this.friendRequests = {
+                    incoming: response.incoming || [],
+                    outgoing: response.outgoing || []
+                };
                 console.log('✅ フレンド申請リスト読み込み成功:', this.friendRequests);
                 return this.friendRequests;
             } else {
                 console.error('フレンド申請リスト読み込みエラー:', response.message);
-                return { incoming: [], outgoing: [] };
+                this.friendRequests = { incoming: [], outgoing: [] };
+                return this.friendRequests;
             }
         } catch (error) {
             console.error('フレンド申請リスト読み込みエラー:', error);
-            return { incoming: [], outgoing: [] };
+            this.friendRequests = { incoming: [], outgoing: [] };
+            return this.friendRequests;
         }
     }
 
@@ -76,7 +96,7 @@ class FriendsManager {
     // フレンド申請を承認
     async acceptFriendRequest(requestId) {
         try {
-            const response = await apiClient.request(`/friends/request/${requestId}/accept`, {
+            const response = await apiClient.request(`/friends/accept/${requestId}`, {
                 method: 'POST'
             });
 
@@ -101,8 +121,8 @@ class FriendsManager {
     // フレンド申請を拒否
     async rejectFriendRequest(requestId) {
         try {
-            const response = await apiClient.request(`/friends/request/${requestId}/reject`, {
-                method: 'POST'
+            const response = await apiClient.request(`/friends/decline/${requestId}`, {
+                method: 'DELETE'
             });
 
             if (response.success) {
@@ -163,7 +183,11 @@ class FriendsManager {
 
     // 未読フレンド申請数を取得
     getUnreadRequestCount() {
-        return this.friendRequests.incoming ? this.friendRequests.incoming.length : 0;
+        if (!this.friendRequests || !this.friendRequests.incoming) {
+            console.warn('フレンドリクエストが初期化されていません');
+            return 0;
+        }
+        return this.friendRequests.incoming.length;
     }
 }
 

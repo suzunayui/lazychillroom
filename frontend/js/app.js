@@ -481,8 +481,11 @@ class AppLoader {
                         const savedState = localStorage.getItem('chatUI_state');
                         if (savedState) {
                             console.log('✓ 前回の状態が見つかりました。復元を試行します。');
+                            // 状態復元の進捗を表示
+                            this.updateLoadingProgress(20, 100, '前回の状態を確認中...');
                         } else {
                             console.log('💡 初回起動またはクリア済みです。');
+                            this.updateLoadingProgress(20, 100, '初期設定を準備中...');
                         }
                         
                         await this.showChatView();
@@ -523,6 +526,7 @@ class AppLoader {
                 error.status >= 500
             )) {
                 console.log('⚠️ ネットワークエラーですが、認証情報があるためチャット画面を表示します');
+                this.updateLoadingProgress(15, 100, 'オフラインモードで復元中...');
                 try {
                     await this.showChatView();
                 } catch (chatError) {
@@ -695,28 +699,37 @@ class AppLoader {
     }
 
     // ローディング画面を非表示
-    hideLoading() {
-        // 進捗表示をクリア
-        this.clearLoadingProgress();
-        
-        const loadingStyles = document.getElementById('loading-styles');
-        if (loadingStyles) {
-            loadingStyles.remove();
+    hideLoading(immediate = false) {
+        const hideFunction = () => {
+            // 進捗表示をクリア
+            this.clearLoadingProgress();
+            
+            const loadingStyles = document.getElementById('loading-styles');
+            if (loadingStyles) {
+                loadingStyles.remove();
+            }
+            
+            // ローディング画面を非表示
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            }
+            
+            // app要素を表示する
+            const appContainer = document.getElementById('app');
+            if (appContainer) {
+                appContainer.style.display = 'block';
+            }
+            
+            console.log('✓ ローディング画面を完全に非表示にしました');
+        };
+
+        if (immediate) {
+            hideFunction();
+        } else {
+            // 短い遅延を設けてスムーズな遷移を提供
+            setTimeout(hideFunction, 200);
         }
-        
-        // ローディング画面を非表示
-        const loadingScreen = document.getElementById('loadingScreen');
-        if (loadingScreen) {
-            loadingScreen.style.display = 'none';
-        }
-        
-        // app要素を表示する
-        const appContainer = document.getElementById('app');
-        if (appContainer) {
-            appContainer.style.display = 'block';
-        }
-        
-        console.log('✓ ローディング画面を完全に非表示にしました');
     }
 
     // エラー画面を表示
@@ -752,36 +765,19 @@ class AppLoader {
             
             // ローディング表示
             this.showLoading();
-            this.updateLoadingProgress(10, 100, 'チャット画面を初期化中...');
+            this.updateLoadingProgress(10, 100, '前回の状態を復元中...');
             
             // スクリプトは既に読み込み済みのため、ここでは読み込まない
             console.log('✓ スクリプトは既に読み込み済みです');
             
-            this.updateLoadingProgress(50, 100, 'チャット画面を初期化中...');
+            this.updateLoadingProgress(30, 100, 'アプリケーションを初期化中...');
             
             // NotificationManagerを初期化（まだ存在しない場合）
             if (!window.notificationManager && typeof NotificationManager !== 'undefined') {
                 window.notificationManager = new NotificationManager();
             }
             
-            // Socket.io接続を初期化
-            const token = localStorage.getItem('auth_token');
-            if (token && typeof SocketManager !== 'undefined') {
-                try {
-                    console.log('Socket.io接続を初期化中...');
-                    if (!window.socketManager) {
-                        window.socketManager = new SocketManager();
-                    }
-                    await window.socketManager.connect(token);
-                    window.socketManager.setupAllEvents();
-                    console.log('✓ Socket.io接続が完了しました');
-                } catch (error) {
-                    console.error('Socket.io接続に失敗:', error);
-                    // Socket.io接続に失敗してもチャット画面は表示
-                }
-            }
-            
-            this.updateLoadingProgress(90, 100, 'UI初期化中...');
+            this.updateLoadingProgress(50, 100, 'チャット機能を準備中...');
             
             // ChatUIに必要なクラスが読み込まれているか確認
             const requiredClasses = [
@@ -795,17 +791,104 @@ class AppLoader {
                 throw new Error(`必要なクラスが読み込まれていません: ${missingClasses.join(', ')}`);
             }
             
+            this.updateLoadingProgress(70, 100, 'チャット画面を構築中...');
+            
             const chatUI = new ChatUI();
             await chatUI.init();
             this.app = chatUI;
             
-            this.hideLoading();
+            this.updateLoadingProgress(90, 100, '最終準備中...');
+            
+            // Socket.io接続とフレンド管理システムを非同期で初期化（チャット画面表示をブロックしない）
+            const token = localStorage.getItem('auth_token');
+            if (token && typeof SocketManager !== 'undefined') {
+                // Socket.io接続は非同期で実行（表示をブロックしない）
+                setTimeout(async () => {
+                    try {
+                        console.log('Socket.io接続を非同期で初期化中...');
+                        if (!window.socketManager) {
+                            window.socketManager = new SocketManager();
+                        }
+                        await window.socketManager.connect(token);
+                        window.socketManager.setupAllEvents();
+                        console.log('✓ Socket.io接続が完了しました');
+                        
+                        // フレンド管理システムを遅延初期化
+                        this.initializeFriendsSystemDelayed();
+                    } catch (error) {
+                        console.error('Socket.io接続に失敗:', error);
+                        // エラーは通知するが、チャット画面の表示は継続
+                        if (window.notificationManager) {
+                            window.notificationManager.warning('リアルタイム機能の接続に失敗しました。手動でページを再読み込みしてください。');
+                        }
+                    }
+                }, 100); // 100ms後に実行
+            }
+            
+            this.updateLoadingProgress(100, 100, '完了');
+            
+            // 少し短い遅延でローディングを非表示
+            setTimeout(() => {
+                this.hideLoading();
+            }, 200); // 200msに短縮
+            
             console.log('✓ チャット画面が正常に初期化されました');
         } catch (error) {
             this.hideLoading();
             console.error('チャット画面の初期化に失敗:', error);
             this.showError('チャット画面の初期化に失敗しました: ' + error.message);
         }
+    }
+
+    // フレンド管理システムを遅延初期化
+    initializeFriendsSystemDelayed() {
+        // フレンド管理システムが必要なクラスが揃っているか確認
+        const friendsClasses = ['FriendsManager', 'FriendsUI', 'DMManager'];
+        const missingClasses = friendsClasses.filter(className => typeof window[className] === 'undefined');
+        
+        if (missingClasses.length > 0) {
+            console.log('フレンド管理システムのクラスが見つかりません:', missingClasses);
+            return;
+        }
+        
+        setTimeout(() => {
+            try {
+                console.log('🔄 フレンド管理システムを初期化中...');
+                
+                // APIクライアントが利用可能かチェック
+                if (!window.apiClient) {
+                    console.error('❌ APIクライアントが初期化されていません');
+                    return;
+                }
+                
+                // フレンド管理システムの初期化
+                if (!window.friendsManager) {
+                    console.log('📝 FriendsManagerを初期化中...');
+                    window.friendsManager = new FriendsManager();
+                    console.log('✓ FriendsManager初期化完了');
+                }
+                
+                if (!window.friendsUI) {
+                    console.log('📝 FriendsUIを初期化中...');
+                    window.friendsUI = new FriendsUI();
+                    console.log('✓ FriendsUI初期化完了');
+                }
+                
+                if (!window.dmManager) {
+                    console.log('📝 DMManagerを初期化中...');
+                    window.dmManager = new DMManager();
+                    console.log('✓ DMManager初期化完了');
+                }
+                
+                console.log('✅ フレンド管理システムが完全に初期化されました');
+                
+                // 初期化完了を通知するイベントを発行
+                window.dispatchEvent(new CustomEvent('friendsSystemReady'));
+                
+            } catch (error) {
+                console.error('❌ フレンド管理システムの初期化に失敗:', error);
+            }
+        }, 500); // 500ms後に初期化
     }
 
     // 認証後にチャット関連のスクリプトを読み込む（廃止予定 - 現在は初期化時に全て読み込み済み）

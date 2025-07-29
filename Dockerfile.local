@@ -1,0 +1,30 @@
+# Node.js 22 LTS (alpineベース)
+FROM node:22-alpine
+
+# 開発用パッケージをインストール
+RUN apk add --no-cache bash curl
+
+# 作業ディレクトリ
+WORKDIR /app
+
+# package.jsonをコピーして依存関係をインストール
+COPY package*.json ./
+RUN npm install
+
+# nodemonをグローバルにインストール（開発用）
+RUN npm install -g nodemon
+
+# ソースコードをコピー（ボリュームマウントで上書きされる予定）
+COPY ./backend /app/backend
+COPY ./migrations /app/migrations
+
+# configフォルダもコピー（migrationsから参照される）
+
+# 環境変数
+ENV NODE_ENV=development
+
+# サーバーポート
+EXPOSE 3000
+
+# デフォルトコマンド（docker-composeで上書きされる）
+CMD ["npx", "nodemon", "backend/server.js"]

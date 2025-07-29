@@ -46,7 +46,6 @@ class UIComponents {
                     <div class="channels-section" id="channelsSection">
                         <div class="section-header">
                             <span id="sectionTitle">テキストチャンネル</span>
-                            <button class="add-channel-btn" id="addChannelBtn" title="チャンネルを追加">+</button>
                         </div>
                         <div class="channels-list" id="channelsList">
                             <!-- チャンネルリストは動的に生成される -->
@@ -296,23 +295,92 @@ class UIComponents {
         return html;
     }
 
-    // DMユーザーリストのHTMLを生成
-    static createDMUserListHTML(dmChannels) {
+    // DMユーザーリストのHTMLを生成（フレンド一覧と追加ボタンを含む）
+    static createDMUserListHTML(dmChannels, friendsList = []) {
         let html = '';
-        dmChannels.forEach(dm => {
-            const participant = dm.participants[0]; // 最初の参加者（自分以外）
-            if (participant) {
-                html += `
-                    <div class="dm-user-item" data-dm="${dm.id}">
-                        <div class="dm-avatar">${(participant.nickname || participant.userid).charAt(0).toUpperCase()}</div>
-                        <span class="dm-name">${participant.nickname || participant.userid}</span>
-                        <div class="dm-status online"></div>
-                    </div>
-                `;
+        
+        // 既存のDMチャンネル
+        if (dmChannels && dmChannels.length > 0) {
+            dmChannels.forEach(dm => {
+                const participant = dm.participants && dm.participants[0]; // 最初の参加者（自分以外）
+                if (participant) {
+                    const displayName = participant.nickname || participant.userid;
+                    const avatarUrl = participant.avatar_url;
+                    html += `
+                        <div class="dm-user-item" data-dm="${dm.id}">
+                            <div class="dm-avatar">
+                                ${avatarUrl ? 
+                                    `<img src="${avatarUrl}" alt="${displayName}" class="avatar-img">` :
+                                    displayName.charAt(0).toUpperCase()
+                                }
+                                <div class="dm-status online"></div>
+                            </div>
+                            <span class="dm-name">${this.escapeHtml(displayName)}</span>
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        // フレンド一覧（DMチャンネルがないフレンド）
+        if (friendsList && friendsList.length > 0) {
+            // 既存のDMがあるフレンドを除外
+            const dmUserIds = new Set();
+            if (dmChannels) {
+                dmChannels.forEach(dm => {
+                    if (dm.participants) {
+                        dm.participants.forEach(p => dmUserIds.add(p.id));
+                    }
+                });
             }
-        });
+            
+            const friendsWithoutDM = friendsList.filter(friend => 
+                !dmUserIds.has(friend.friend_id || friend.id)
+            );
+            
+            if (friendsWithoutDM.length > 0) {
+                friendsWithoutDM.forEach(friend => {
+                    const displayName = friend.nickname || friend.userid;
+                    const avatarUrl = friend.avatar_url;
+                    const statusClass = `status-${friend.status || 'offline'}`;
+                    
+                    html += `
+                        <div class="dm-user-item dm-friend-item" data-friend-id="${friend.friend_id || friend.id}">
+                            <div class="dm-avatar">
+                                ${avatarUrl ? 
+                                    `<img src="${avatarUrl}" alt="${displayName}" class="avatar-img">` :
+                                    displayName.charAt(0).toUpperCase()
+                                }
+                                <div class="dm-status ${statusClass}"></div>
+                            </div>
+                            <span class="dm-name">${this.escapeHtml(displayName)}</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+        
+        // フレンドもDMもない場合の大きなフレンド追加ボタン
+        if ((!dmChannels || dmChannels.length === 0) && (!friendsList || friendsList.length === 0)) {
+            html += `
+                <div class="dm-empty-state">
+                    <button class="add-friend-btn-large" id="addFriendFromDMLarge" title="フレンドを追加">
+                        <i class="fas fa-user-plus"></i>
+                        フレンド追加
+                    </button>
+                </div>
+            `;
+        }
         
         return html;
+    }
+
+    // HTMLエスケープ関数
+    static escapeHtml(text) {
+        if (typeof text !== 'string') return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // メンバーリストのHTMLを生成

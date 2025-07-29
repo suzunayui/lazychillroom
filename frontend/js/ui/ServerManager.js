@@ -459,15 +459,262 @@ class ServerManager {
         }
     }
 
-    // DMユーザーリスト表示
+    // DMユーザーリスト表示 → フレンド管理画面表示に変更
     async showDMUserList() {
-        const sectionTitle = document.getElementById('sectionTitle');
+        try {
+            console.log('🔄 フレンド管理画面を表示中...');
+            
+            // DMモードを有効化
+            this.chatUI.isDMMode = true;
+            
+            // セクションタイトルを更新
+            const sectionTitle = document.getElementById('sectionTitle');
+            sectionTitle.textContent = 'ダイレクトメッセージ';
+            
+            // フレンド管理画面を中央に表示
+            if (this.chatUI.showFriendsView) {
+                await this.chatUI.showFriendsView();
+            } else {
+                // FriendsUIが初期化されていない場合の代替表示
+                const mainContent = document.getElementById('chatMessages') || document.getElementById('mainContent') || document.getElementById('channelContent');
+                if (mainContent) {
+                    mainContent.innerHTML = `
+                        <div class="friends-loading">
+                            <div class="loading-spinner"></div>
+                            <p>フレンド管理機能を初期化中...</p>
+                        </div>
+                    `;
+                }
+                
+                // 少し待ってからリトライ
+                setTimeout(async () => {
+                    if (this.chatUI.showFriendsView) {
+                        await this.chatUI.showFriendsView();
+                    } else {
+                        console.error('フレンド管理機能が利用できません');
+                        if (mainContent) {
+                            mainContent.innerHTML = `
+                                <div class="friends-error">
+                                    <p>フレンド管理機能が利用できません</p>
+                                    <button onclick="location.reload()">再読み込み</button>
+                                </div>
+                            `;
+                        }
+                    }
+                }, 1000);
+            }
+            
+            // サイドバーには簡易的なDMリストを表示
+            await this.showDMSidebar();
+            
+        } catch (error) {
+            console.error('フレンド管理画面表示エラー:', error);
+            if (this.chatUI.uiUtils) {
+                this.chatUI.uiUtils.showNotification('フレンド管理画面の表示に失敗しました', 'error');
+            }
+        }
+    }
+
+    // サイドバー用の簡易DMリスト表示
+    async showDMSidebar() {
         const channelsList = document.getElementById('channelsList');
         
-        sectionTitle.textContent = 'ダイレクトメッセージ';
-        
-        const dmChannels = await this.chatUI.chatManager.loadChannels();
-        channelsList.innerHTML = UIComponents.createDMUserListHTML(dmChannels);
+        try {
+            // DMチャンネルとフレンドリストを並行して取得
+            const [dmChannels, friendsList] = await Promise.all([
+                this.chatUI.chatManager.loadChannels(),
+                this.loadFriendsForDMList()
+            ]);
+            
+            channelsList.innerHTML = UIComponents.createDMUserListHTML(dmChannels, friendsList);
+            
+            // イベントリスナーを設定
+            this.bindDMListEvents();
+        } catch (error) {
+            console.error('DMサイドバー表示エラー:', error);
+            channelsList.innerHTML = UIComponents.createDMUserListHTML([], []);
+            this.bindDMListEvents();
+        }
+    }
+
+    // DMリスト用のフレンドリストを取得
+    async loadFriendsForDMList() {
+        try {
+            // フレンド管理システムが初期化されていない場合は初期化完了まで待機
+            if (!window.friendsManager) {
+                console.log('⏳ FriendsManagerの初期化を待機中...');
+                
+                // 初期化完了イベントを待機（最大3秒）
+                let timeoutId;
+                const waitForInit = new Promise((resolve, reject) => {
+                    const checkInit = () => {
+                        if (window.friendsManager) {
+                            clearTimeout(timeoutId);
+                            console.log('✓ FriendsManagerの初期化が完了しました');
+                            resolve();
+                        }
+                    };
+                    
+                    // 初期化完了イベントをリッスン
+                    window.addEventListener('friendsSystemReady', checkInit, { once: true });
+                    
+                    // すでに初期化済みの場合はすぐに解決
+                    checkInit();
+                    
+                    // 3秒でタイムアウト
+                    timeoutId = setTimeout(() => {
+                        window.removeEventListener('friendsSystemReady', checkInit);
+                        console.warn('⚠️ FriendsManagerの初期化がタイムアウトしました');
+                        resolve(); // エラーにせずに続行
+                    }, 3000);
+                });
+                
+                await waitForInit;
+            }
+            
+            // まだ初期化されていない場合は空配列を返す
+            if (!window.friendsManager) {
+                console.log('⚠️ FriendsManagerが利用できません - 空のフレンドリストを返します');
+                return [];
+            }
+            
+            console.log('🔄 フレンドリストを読み込み中...');
+            await window.friendsManager.loadFriends();
+            const friends = window.friendsManager.friends || [];
+            console.log('✅ フレンドリスト読み込み完了:', friends.length, '人');
+            return friends;
+        } catch (error) {
+            console.error('フレンドリスト取得エラー:', error);
+            
+            // エラーの詳細を表示
+            if (error.status === 401) {
+                console.error('認証エラー: ログインが必要です');
+            } else if (error.status === 404) {
+                console.error('APIエンドポイントが見つかりません');
+            } else if (error.status >= 500) {
+                console.error('サーバーエラーが発生しました');
+            }
+            
+            // エラーの場合は空配列を返してUIは継続する
+            return [];
+        }
+    }
+
+    // DMリストのイベントをバインド
+    bindDMListEvents() {
+        const channelsList = document.getElementById('channelsList');
+        if (!channelsList) return;
+
+        // フレンドを追加ボタン（大）
+        const addFriendBtnLarge = channelsList.querySelector('#addFriendFromDMLarge');
+        if (addFriendBtnLarge) {
+            addFriendBtnLarge.addEventListener('click', async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                await this.showAddFriendModal();
+            });
+        }
+
+        // フレンドアイテム（DM開始）
+        channelsList.querySelectorAll('.dm-friend-item').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const friendId = item.dataset.friendId;
+                if (friendId && window.dmManager) {
+                    try {
+                        // フレンドとのDMチャンネルを作成または取得
+                        const dmChannel = await window.dmManager.createOrGetDMChannel(parseInt(friendId));
+                        if (dmChannel) {
+                            await window.dmManager.switchToDMChannel(dmChannel);
+                        }
+                    } catch (error) {
+                        console.error('フレンドとのDM開始エラー:', error);
+                        if (window.notificationManager) {
+                            window.notificationManager.error('DMの開始に失敗しました');
+                        }
+                    }
+                }
+            });
+        });
+
+        // 既存のDMアイテム
+        channelsList.querySelectorAll('.dm-user-item[data-dm]').forEach(item => {
+            item.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const dmId = item.dataset.dm;
+                if (dmId && window.dmManager) {
+                    const dmChannel = window.dmManager.findDMChannelById(parseInt(dmId));
+                    if (dmChannel) {
+                        await window.dmManager.switchToDMChannel(dmChannel);
+                    }
+                }
+            });
+        });
+    }
+
+    // フレンド追加モーダルを表示
+    async showAddFriendModal() {
+        try {
+            // フレンド管理画面を表示して、そこからフレンド追加を行う
+            console.log('🔄 フレンド管理画面でフレンド追加を実行...');
+            
+            if (this.chatUI.showFriendsView) {
+                await this.chatUI.showFriendsView();
+                
+                // フレンド管理画面が表示された後、フレンド追加モーダルを表示
+                setTimeout(() => {
+                    if (window.friendsManager && this.chatUI.uiUtils) {
+                        this.showQuickFriendAdd();
+                    }
+                }, 300);
+            } else {
+                // 従来のモーダル方式をフォールバック
+                await this.showQuickFriendAdd();
+            }
+            
+        } catch (error) {
+            console.error('フレンド追加機能表示エラー:', error);
+            if (this.chatUI.uiUtils) {
+                this.chatUI.uiUtils.showNotification('フレンド追加機能でエラーが発生しました', 'error');
+            }
+        }
+    }
+
+    // クイックフレンド追加モーダル
+    async showQuickFriendAdd() {
+        try {
+            if (window.friendsManager && this.chatUI.uiUtils) {
+                const result = await this.chatUI.uiUtils.showInput({
+                    title: 'フレンド追加',
+                    message: 'フレンドのユーザー名を入力してください:',
+                    placeholder: 'ユーザー名',
+                    confirmText: '送信',
+                    cancelText: 'キャンセル'
+                });
+
+                if (result && result.trim()) {
+                    const response = await window.friendsManager.sendFriendRequest(result);
+                    this.chatUI.uiUtils.showNotification(
+                        response.message, 
+                        response.success ? 'success' : 'error'
+                    );
+                    
+                    if (response.success) {
+                        // フレンド管理画面を更新
+                        if (this.chatUI.showFriendsView) {
+                            await this.chatUI.showFriendsView();
+                        }
+                        // サイドバーも更新
+                        await this.showDMSidebar();
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('クイックフレンド追加エラー:', error);
+            if (this.chatUI.uiUtils) {
+                this.chatUI.uiUtils.showNotification('フレンド追加でエラーが発生しました', 'error');
+            }
+        }
     }
 
     // チャンネルリスト表示

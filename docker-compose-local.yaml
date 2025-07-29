@@ -1,0 +1,53 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.local
+    image: lazychillroom-backend-local
+    container_name: lazy-backend-local
+    env_file:
+      - .env.local
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./backend:/app/backend
+      - ./migrations:/app/migrations
+      - ./backend/config:/app/config
+      - ./frontend:/app/frontend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      sh -c "node migrations/initPostgreSQL.js && npx nodemon backend/server.js"
+
+  db:
+    image: postgres:16
+    container_name: lazy-postgres-local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lazychill123}
+      POSTGRES_DB: lazychill
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data-local:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: lazy-redis-local
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data-local:/data
+
+volumes:
+  db-data-local:
+  redis-data-local:

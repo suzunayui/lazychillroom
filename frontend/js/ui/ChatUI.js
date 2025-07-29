@@ -40,6 +40,8 @@ class ChatUI {
             
             // グローバルアクセス用
             window.chatUI = this;
+            window.friendsManager = this.friendsManager; // FriendsManagerをグローバルに設定
+            window.dmManager = this.dmManager; // DMManagerをグローバルに設定
             this.messageManager = this.chatManager.messageManager; // インスタンス変数として設定
             window.messageManager = this.chatManager.messageManager; // MessageManagerをグローバルに設定
             window.presenceManager = this.presenceManager; // PresenceManagerをグローバルに設定
@@ -907,18 +909,18 @@ class ChatUI {
     // フレンド画面を表示
     async showFriendsView() {
         try {
-            // DMモードを無効化
-            this.isDMMode = false;
+            // DMモードを維持（削除しない）
+            this.isDMMode = true;
             
             // サーバー選択状態をクリア
             document.querySelectorAll('.server-item').forEach(item => {
                 item.classList.remove('active');
             });
             
-            // DMボタンの状態をクリア
+            // DMボタンをアクティブ状態に保つ
             const dmButton = document.getElementById('dmButton');
             if (dmButton) {
-                dmButton.classList.remove('active');
+                dmButton.classList.add('active');
             }
             
             // メンバーリストを非表示

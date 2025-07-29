@@ -449,3 +449,46 @@
         padding: 15px;
     }
 }
+
+/* フレンド管理セクション */
+.friends-management {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.settings-button {
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+}
+
+.settings-button:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.friends-quick-info {
+    background: var(--background-tertiary);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-primary);
+}
+
+.friends-quick-info p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.4;
+}

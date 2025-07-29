@@ -19,6 +19,25 @@ class FriendsUI {
     // メイン画面を表示
     async showFriendsView() {
         try {
+            // メイン画面を先に作成してローディング表示
+            const html = this.createFriendsMainHTML();
+            
+            // メインコンテンツエリアに表示
+            const mainContent = document.getElementById('chatMessages') || document.getElementById('mainContent') || document.getElementById('channelContent');
+            if (mainContent) {
+                mainContent.innerHTML = html;
+                this.bindFriendsEvents();
+                
+                // ローディング表示
+                const contentArea = document.getElementById('friendsContent');
+                if (contentArea) {
+                    contentArea.innerHTML = '<div class="loading-message">フレンド情報を読み込み中...</div>';
+                }
+            } else {
+                console.error('メインコンテンツエリアが見つかりません');
+                return;
+            }
+
             // フレンドリストとDMチャンネルを読み込み
             await Promise.all([
                 this.friendsManager.loadFriends(),
@@ -26,16 +45,8 @@ class FriendsUI {
                 this.dmManager.loadDMChannels()
             ]);
 
-            // メイン画面を作成
-            const html = this.createFriendsMainHTML();
-            
-            // メインコンテンツエリアに表示
-            const mainContent = document.getElementById('mainContent') || document.getElementById('channelContent');
-            if (mainContent) {
-                mainContent.innerHTML = html;
-                this.bindFriendsEvents();
-                this.updateFriendsContent();
-            }
+            // データ読み込み後にコンテンツを更新
+            this.updateFriendsContent();
             
             console.log('✅ フレンド画面表示完了');
         } catch (error) {
@@ -295,11 +306,20 @@ class FriendsUI {
 
     // 申請バッジを更新
     updateRequestBadge() {
-        const badge = document.querySelector('.request-badge');
-        if (badge) {
-            const count = this.friendsManager.getUnreadRequestCount();
-            badge.textContent = count;
-            badge.style.display = count > 0 ? 'inline-block' : 'none';
+        try {
+            const badge = document.querySelector('.request-badge');
+            if (badge) {
+                const count = this.friendsManager.getUnreadRequestCount();
+                badge.textContent = count;
+                badge.style.display = count > 0 ? 'inline-block' : 'none';
+            }
+        } catch (error) {
+            console.error('申請バッジ更新エラー:', error);
+            // エラーが発生してもバッジを非表示にして継続
+            const badge = document.querySelector('.request-badge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
         }
     }
 

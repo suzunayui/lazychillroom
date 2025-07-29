@@ -164,8 +164,8 @@ router.post('/', async (req, res) => {
     // Create new DM channel
     const channelId = await transaction(async (connection) => {
       // Create DM channel
-      const [channelResult] = await connection.query(
-        'INSERT INTO channels (name, type, created_at) VALUES ($1, $2, NOW())',
+      const channelResult = await connection.query(
+        'INSERT INTO channels (name, type, created_at) VALUES ($1, $2, NOW()) RETURNING id',
         [null, 'dm']
       );
 

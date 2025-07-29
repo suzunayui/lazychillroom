@@ -103,6 +103,9 @@ class ApiClient {
 
         if (this.token) {
             config.headers['Authorization'] = `Bearer ${this.token}`;
+            console.log('🔐 API Request with auth token (length:', this.token.length, ')');
+        } else {
+            console.warn('⚠️ API Request without auth token');
         }
 
         if (config.body && typeof config.body === 'object') {

@@ -31,3 +31,5 @@ sudo docker compose logs backend
 
 curl -sSL https://get.docker.com/ | sh
 sudo usermod -aG docker $USER
+
+docker compose -f docker-compose-local.yaml up

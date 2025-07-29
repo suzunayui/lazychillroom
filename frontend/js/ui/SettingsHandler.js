@@ -113,6 +113,25 @@ class SettingsHandler {
 
                 <div class="settings-section">
                     <h3 class="settings-section-title">
+                        <span>👥</span>
+                        フレンド管理
+                    </h3>
+                    <p class="settings-section-description">
+                        フレンドリストやフレンド申請を管理します。
+                    </p>
+                    <div class="friends-management">
+                        <button class="settings-button" id="openFriendsView">
+                            <span>👥</span>
+                            フレンド管理画面を開く
+                        </button>
+                        <div class="friends-quick-info">
+                            <p>ここからフレンドの追加、削除、フレンド申請の承認・拒否ができます。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">
                         <span>ℹ️</span>
                         アカウント情報
                     </h3>
@@ -151,6 +170,14 @@ class SettingsHandler {
         if (avatarUpload) {
             avatarUpload.addEventListener('change', (e) => {
                 this.handleAvatarUpload(e);
+            });
+        }
+
+        // フレンド管理ボタンのイベントリスナー
+        const openFriendsViewBtn = document.getElementById('openFriendsView');
+        if (openFriendsViewBtn) {
+            openFriendsViewBtn.addEventListener('click', () => {
+                this.openFriendsManagement();
             });
         }
 
@@ -447,6 +474,50 @@ class SettingsHandler {
     showError(message) {
         this.setStatus('❌ ' + message, 'error');
         this.hideProgress();
+    }
+
+    // フレンド管理画面を開く
+    async openFriendsManagement() {
+        try {
+            console.log('🔄 フレンド管理画面を開いています...');
+            
+            // 設定画面を閉じて通常のチャット画面に戻る
+            this.chatUI.isDMMode = false;
+            
+            // メッセージ入力エリアを表示
+            const messageInputContainer = document.querySelector('.message-input-container');
+            if (messageInputContainer) {
+                messageInputContainer.style.display = 'flex';
+            }
+            
+            // メッセージコンテナの高さを通常に戻す
+            const messagesContainer = document.querySelector('.messages-container');
+            if (messagesContainer) {
+                messagesContainer.style.height = '';
+                messagesContainer.style.paddingBottom = '';
+            }
+            
+            // フレンド画面を表示
+            if (this.chatUI.showFriendsView) {
+                await this.chatUI.showFriendsView();
+            } else {
+                this.chatUI.uiUtils.showNotification('フレンド管理機能を初期化中です...', 'info');
+                
+                // 少し待ってからリトライ
+                setTimeout(async () => {
+                    if (this.chatUI.showFriendsView) {
+                        await this.chatUI.showFriendsView();
+                    } else {
+                        console.error('フレンド管理機能が利用できません');
+                        this.chatUI.uiUtils.showNotification('フレンド管理機能が利用できません', 'error');
+                    }
+                }, 1000);
+            }
+            
+        } catch (error) {
+            console.error('フレンド管理画面表示エラー:', error);
+            this.chatUI.uiUtils.showNotification('フレンド管理画面の表示に失敗しました', 'error');
+        }
     }
 
     getStatusLabel(status) {

@@ -19,14 +19,33 @@ router.post('/start', async (req, res) => {
     }
 
     // Check if user has access to this channel
-    const channelAccess = await query(`
+    let hasAccess = false;
+
+    // First check if it's a guild channel
+    const guildChannelAccess = await query(`
       SELECT c.id, c.name, c.guild_id 
       FROM channels c
       JOIN guild_members gm ON c.guild_id = gm.guild_id
       WHERE c.id = $1 AND gm.user_id = $2 AND gm.is_active = true
     `, [channel_id, req.user.id]);
 
-    if (channelAccess.length === 0) {
+    if (guildChannelAccess.length > 0) {
+      hasAccess = true;
+    } else {
+      // Check if it's a DM channel the user participates in
+      const dmChannelAccess = await query(`
+        SELECT c.id, c.name, c.type
+        FROM channels c
+        JOIN dm_participants dp ON c.id = dp.channel_id
+        WHERE c.id = $1 AND c.type = 'dm' AND dp.user_id = $2
+      `, [channel_id, req.user.id]);
+
+      if (dmChannelAccess.length > 0) {
+        hasAccess = true;
+      }
+    }
+
+    if (!hasAccess) {
       return res.status(403).json({
         success: false,
         message: 'このチャンネルにアクセスする権限がありません'
@@ -115,14 +134,33 @@ router.get('/:channelId', async (req, res) => {
     const { channelId } = req.params;
 
     // Check if user has access to this channel
-    const channelAccess = await query(`
+    let hasAccess = false;
+
+    // First check if it's a guild channel
+    const guildChannelAccess = await query(`
       SELECT c.id, c.name, c.guild_id 
       FROM channels c
       JOIN guild_members gm ON c.guild_id = gm.guild_id
       WHERE c.id = $1 AND gm.user_id = $2 AND gm.is_active = true
     `, [channelId, req.user.id]);
 
-    if (channelAccess.length === 0) {
+    if (guildChannelAccess.length > 0) {
+      hasAccess = true;
+    } else {
+      // Check if it's a DM channel the user participates in
+      const dmChannelAccess = await query(`
+        SELECT c.id, c.name, c.type
+        FROM channels c
+        JOIN dm_participants dp ON c.id = dp.channel_id
+        WHERE c.id = $1 AND c.type = 'dm' AND dp.user_id = $2
+      `, [channelId, req.user.id]);
+
+      if (dmChannelAccess.length > 0) {
+        hasAccess = true;
+      }
+    }
+
+    if (!hasAccess) {
       return res.status(403).json({
         success: false,
         message: 'このチャンネルにアクセスする権限がありません'

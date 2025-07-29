@@ -678,3 +678,150 @@
 .sidebar .channels-list .channel-item.uploader-channel[data-channel]:hover .channel-name {
     color: #dcddde;
 }
+
+/* DMセクションヘッダー（フレンド追加ボタン付き） */
+.dm-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 8px 12px 8px 12px;
+    margin-bottom: 4px;
+}
+
+.add-friend-btn-dm {
+    background: none;
+    border: 1px solid #4f545c;
+    color: #dcddde;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.add-friend-btn-dm:hover {
+    background-color: #404249;
+    border-color: #43b581;
+    color: #43b581;
+}
+
+.add-friend-btn-dm:active {
+    background-color: #36393f;
+}
+
+/* 大きなフレンド追加ボタン（空の状態用） */
+.add-friend-btn-large {
+    background: #43b581;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    width: 100%;
+    max-width: 200px;
+}
+
+.add-friend-btn-large:hover {
+    background-color: #3aa76b;
+    transform: translateY(-1px);
+}
+
+.add-friend-btn-large:active {
+    background-color: #2d8f5a;
+    transform: translateY(0);
+}
+
+/* DMフレンドアイテム */
+.dm-friend-item {
+    position: relative;
+}
+
+.dm-friend-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: transparent;
+    transition: background-color 0.15s ease;
+}
+
+.dm-friend-item:hover::before {
+    background-color: #43b581;
+}
+
+.dm-friend-item .dm-avatar .avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* ステータスインジケーター */
+.dm-status.status-online {
+    background-color: #43b581;
+}
+
+.dm-status.status-idle,
+.dm-status.status-away {
+    background-color: #faa61a;
+}
+
+.dm-status.status-dnd,
+.dm-status.status-busy {
+    background-color: #f04747;
+}
+
+.dm-status.status-invisible,
+.dm-status.status-offline {
+    background-color: #747f8d;
+}
+
+/* DMが空の場合の表示 */
+.dm-empty-state {
+    padding: 20px 12px;
+    text-align: center;
+    color: #72767d;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.dm-empty-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+    opacity: 0.6;
+}
+
+.dm-empty-text {
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0 0 8px 0;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .dm-section-header {
+        padding: 12px 8px 6px 8px;
+    }
+    
+    .dm-user-item {
+        padding: 8px 6px;
+        margin: 0 2px 1px 2px;
+    }
+}
